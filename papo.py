@@ -667,6 +667,7 @@ def show_sidebar():
                 ]),
                 ("TOOLS", [
                     ("MerchSim",    "Merchant Sim"),
+                    ("Testing",     "Testing"),
                 ]),
             ]
         else:
@@ -3817,6 +3818,12 @@ def show_home():
                         f'</div>', unsafe_allow_html=True)
 
 
+# ── Testing ────────────────────────────────────────────────────────────────────
+def show_testing():
+    st.markdown("## Testing")
+    st.caption("This section is under construction.")
+
+
 # ── Main App ───────────────────────────────────────────────────────────────────
 inject_css(st.session_state.role)
 
@@ -3856,3 +3863,5 @@ else:
         show_merchant_sim()
     elif page == "MissionCtrl":
         show_mission_control()
+    elif page == "Testing":
+        show_testing()
