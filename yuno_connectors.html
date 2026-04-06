@@ -54,6 +54,14 @@ html,body{min-height:100vh;font-family:var(--font);background:var(--bg);color:va
 .f-select:focus{border-color:var(--indigo);}
 .f-select.active{border-color:var(--indigo);color:var(--indigo);font-weight:600;background:#FAFAFF;}
 .dl-wrap{position:relative;}
+.col-btn{background:var(--white);color:var(--slate);border:1px solid var(--line);border-radius:8px;padding:7px 14px;font-size:11px;font-weight:600;cursor:pointer;font-family:var(--font);display:flex;align-items:center;gap:5px;transition:all 0.12s;white-space:nowrap;}
+.col-btn:hover{border-color:var(--indigo);color:var(--indigo);}
+.col-menu{display:none;position:absolute;right:0;top:calc(100% + 4px);background:#fff;border:1px solid var(--line);border-radius:8px;box-shadow:0 8px 24px rgba(0,0,0,0.1);z-index:50;min-width:170px;overflow:hidden;animation:dlFade 0.12s ease;padding:4px 0;}
+.col-row{padding:8px 16px;font-size:12px;font-weight:500;cursor:pointer;color:var(--ink);display:flex;align-items:center;gap:10px;transition:background 0.1s;user-select:none;}
+.col-row:hover{background:#F8FAFC;}
+.col-eye{width:18px;height:18px;border-radius:4px;display:flex;align-items:center;justify-content:center;font-size:13px;flex-shrink:0;transition:all 0.12s;}
+.col-eye.on{color:var(--indigo);}
+.col-eye.off{color:#D1D5DB;}
 .dl-btn{background:var(--ink);color:#A5B4FC;border:none;border-radius:8px;padding:7px 14px;font-size:11px;font-weight:600;cursor:pointer;font-family:var(--font);display:flex;align-items:center;gap:5px;transition:all 0.12s;white-space:nowrap;}
 .dl-btn:hover{background:#1a2236;}
 .dl-menu{display:none;position:absolute;right:0;top:calc(100% + 4px);background:#fff;border:1px solid var(--line);border-radius:8px;box-shadow:0 8px 24px rgba(0,0,0,0.1);z-index:50;min-width:140px;overflow:hidden;animation:dlFade 0.12s ease;}
@@ -151,16 +159,24 @@ tr.detail-row.open{display:table-row;}
       <label class="tb-toggle"><input type="checkbox" id="show-all" checked onchange="filterTable()"> Show all</label>
       <span class="tb-count" id="tbl-count"></span>
     </div>
-    <div class="dl-wrap" id="dl-wrap">
-      <button class="dl-btn" onclick="document.getElementById('dl-menu').style.display=document.getElementById('dl-menu').style.display==='block'?'none':'block';">
-        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
-        Export ▾
-      </button>
-      <div class="dl-menu" id="dl-menu">
-        <div class="dl-item" onclick="exportPDF()">PDF</div>
-        <div class="dl-item" onclick="exportExcel()">Excel</div>
-        <div class="dl-item" onclick="exportPPTX()">PowerPoint</div>
+    <div style="display:flex;align-items:center;gap:6px;">
+      <div class="dl-wrap" id="col-wrap">
+        <button class="col-btn" onclick="document.getElementById('col-menu').style.display=document.getElementById('col-menu').style.display==='block'?'none':'block';">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+          Columns ▾
+        </button>
+        <div class="col-menu" id="col-menu"></div>
       </div>
+      <div class="dl-wrap" id="dl-wrap">
+        <button class="dl-btn" onclick="document.getElementById('dl-menu').style.display=document.getElementById('dl-menu').style.display==='block'?'none':'block';">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+          Export ▾
+        </button>
+        <div class="dl-menu" id="dl-menu">
+          <div class="dl-item" onclick="exportPDF()">PDF</div>
+          <div class="dl-item" onclick="exportExcel()">Excel</div>
+          <div class="dl-item" onclick="exportPPTX()">PowerPoint</div>
+        </div>
     </div>
   </div>
 </div>
@@ -532,17 +548,36 @@ var ALL_COLS=[
 // Auto-determine visible columns: Name + Type always on, others based on active filters
 var selectedCols={name:true,type:true,region:true,country:true,status:true,tier:false,manager:false};
 
+// Toggleable table columns (Name is always on)
+var TOGGLEABLE_COLS=['type','region','country','status'];
+
+function renderColMenu(){
+  var menu=document.getElementById('col-menu');
+  menu.innerHTML='';
+  TOGGLEABLE_COLS.forEach(function(key){
+    var col=ALL_COLS.find(function(c){return c.key===key;});
+    if(!col) return;
+    var isOn=selectedCols[key];
+    var row=document.createElement('div');
+    row.className='col-row';
+    row.innerHTML='<span class="col-eye '+(isOn?'on':'off')+'">'+(isOn?'👁':'👁‍🗨')+'</span>'+col.label;
+    row.addEventListener('click',function(e){
+      e.preventDefault();e.stopPropagation();
+      selectedCols[key]=!selectedCols[key];
+      renderColMenu();
+      filterTable();
+    });
+    menu.appendChild(row);
+  });
+}
+renderColMenu();
+
 function onFilterChange(){
-  // Auto-show columns when their filter is active
   var ft=document.getElementById('f-type').value;
   var fr=document.getElementById('f-region').value;
   var fs=document.getElementById('f-status').value;
   var fti=document.getElementById('f-tier').value;
-  // Always show Name + Type. Show others based on filter or default
-  selectedCols.region=true; // always useful
-  selectedCols.country=true; // always useful
-  selectedCols.status = !!fs || true; // show by default
-  selectedCols.tier = !!fti; // only show when filtered
+  selectedCols.tier = !!fti;
   // Highlight active selects
   document.getElementById('f-type').className='f-select'+(ft?' active':'');
   document.getElementById('f-region').className='f-select'+(fr?' active':'');
@@ -553,10 +588,13 @@ function onFilterChange(){
 
 render(DATA);
 
-// Close download menu on outside click
+// Close menus on outside click
 document.addEventListener('click',function(e){
   if(!document.getElementById('dl-wrap').contains(e.target)){
     document.getElementById('dl-menu').style.display='none';
+  }
+  if(!document.getElementById('col-wrap').contains(e.target)){
+    document.getElementById('col-menu').style.display='none';
   }
 });
 
