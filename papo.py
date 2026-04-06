@@ -1149,15 +1149,48 @@ def _build_partners_df():
     return pd.DataFrame(rows)
 
 
-def _export_csv(df):
+def _export_excel(df):
     import io
-    buf = io.StringIO()
-    buf.write("Yuno — Partner Portfolio Export\n")
-    buf.write(f"Generated on {pd.Timestamp.now().strftime('%B %d, %Y')}\n")
-    buf.write("Logo: See Yuno logo included in PDF/Google Slides exports\n")
-    buf.write("\n")
-    df.to_csv(buf, index=False)
-    return buf.getvalue().encode("utf-8")
+    from openpyxl import Workbook
+    from openpyxl.drawing.image import Image as XlImage
+    from openpyxl.styles import Font, PatternFill, Alignment
+    wb = Workbook()
+    ws = wb.active
+    ws.title = "Partner Portfolio"
+    # Logo
+    logo_path = _os.path.join(_BASE, "Yuno logo.png")
+    if _os.path.exists(logo_path):
+        img = XlImage(logo_path)
+        img.width = 150
+        img.height = 150
+        ws.add_image(img, "A1")
+    # Title below logo
+    ws["A9"] = "Yuno — Partner Portfolio Export"
+    ws["A9"].font = Font(name="Helvetica", size=14, bold=True, color="4F46E5")
+    ws["A10"] = f"Generated on {pd.Timestamp.now().strftime('%B %d, %Y')}"
+    ws["A10"].font = Font(name="Helvetica", size=10, color="6B7280")
+    # Header row
+    header_row = 12
+    header_fill = PatternFill(start_color="4F46E5", end_color="4F46E5", fill_type="solid")
+    header_font = Font(name="Helvetica", size=10, bold=True, color="FFFFFF")
+    for c_idx, col in enumerate(df.columns, 1):
+        cell = ws.cell(row=header_row, column=c_idx, value=col)
+        cell.fill = header_fill
+        cell.font = header_font
+        cell.alignment = Alignment(horizontal="center")
+    # Data rows
+    data_font = Font(name="Helvetica", size=9, color="1C1433")
+    for r_idx, row in enumerate(df.itertuples(index=False), header_row + 1):
+        for c_idx, val in enumerate(row, 1):
+            cell = ws.cell(row=r_idx, column=c_idx, value=val)
+            cell.font = data_font
+    # Auto-width columns
+    for c_idx, col in enumerate(df.columns, 1):
+        max_len = max(len(str(col)), df[col].astype(str).str.len().max())
+        ws.column_dimensions[ws.cell(row=header_row, column=c_idx).column_letter].width = min(max_len + 4, 30)
+    buf = io.BytesIO()
+    wb.save(buf)
+    return buf.getvalue()
 
 
 def _export_pdf(df):
@@ -1304,11 +1337,11 @@ def show_partners():
     # ── Export button ────────────────────────────────────────────────────────
     _exp_col1, _exp_col2, _exp_col3 = st.columns([6, 2, 2])
     with _exp_col2:
-        export_fmt = st.selectbox("Export format", ["PDF", "CSV", "Google Slides"], key="export_fmt", label_visibility="collapsed")
+        export_fmt = st.selectbox("Export format", ["PDF", "Excel", "Google Slides"], key="export_fmt", label_visibility="collapsed")
     with _exp_col3:
         _partners_df = _build_partners_df()
-        if export_fmt == "CSV":
-            st.download_button("⬇ Download Export", data=_export_csv(_partners_df), file_name="Yuno_Partner_Portfolio.csv", mime="text/csv", use_container_width=True)
+        if export_fmt == "Excel":
+            st.download_button("⬇ Download Export", data=_export_excel(_partners_df), file_name="Yuno_Partner_Portfolio.xlsx", mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", use_container_width=True)
         elif export_fmt == "PDF":
             st.download_button("⬇ Download Export", data=_export_pdf(_partners_df), file_name="Yuno_Partner_Portfolio.pdf", mime="application/pdf", use_container_width=True)
         elif export_fmt == "Google Slides":
