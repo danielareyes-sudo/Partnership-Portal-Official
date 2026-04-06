@@ -27,13 +27,14 @@ html,body{min-height:100vh;font-family:var(--font);background:var(--bg);color:va
 .stat-lbl{font-size:11px;color:var(--ghost);font-weight:600;text-transform:uppercase;letter-spacing:0.05em;margin-top:4px;}
 
 /* SEARCH */
-.search-wrap{background:var(--white);border:0.5px solid var(--line);border-radius:12px;padding:14px 18px;margin-bottom:12px;position:relative;}
+.search-wrap{background:transparent;margin-bottom:12px;}
 .search-badge{display:none;}
 .search-desc{display:none;}
-.search-input{width:100%;padding:11px 14px 11px 36px;background:var(--bg);border:1px solid var(--line);border-radius:9px;font-size:13px;font-family:var(--font);color:var(--ink);outline:none;transition:border-color 0.15s,box-shadow 0.15s;}
-.search-input::placeholder{color:var(--ghost);font-weight:400;}
+.search-box{position:relative;}
+.search-input{width:100%;padding:13px 16px 13px 40px;background:var(--white);border:1px solid var(--line);border-radius:10px;font-size:13px;font-family:var(--font);color:var(--ink);outline:none;transition:border-color 0.15s,box-shadow 0.15s;box-sizing:border-box;}
+.search-input::placeholder{color:#B0B8C4;font-weight:400;}
 .search-input:focus{border-color:var(--indigo);box-shadow:0 0 0 3px rgba(91,95,222,0.08);}
-.search-icon{position:absolute;left:28px;top:50%;transform:translateY(-50%);pointer-events:none;color:var(--ghost);}
+.search-icon{position:absolute;left:14px;top:50%;transform:translateY(-50%);pointer-events:none;color:#B0B8C4;}
 
 /* QUICK SEARCH */
 .qs{display:flex;flex-wrap:wrap;gap:5px;margin:8px 0 0;}
@@ -118,8 +119,8 @@ tr.detail-row.open{display:table-row;}
 
 <!-- SEARCH -->
 <div class="search-wrap">
-  <div style="position:relative;">
-    <svg class="search-icon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+  <div class="search-box">
+    <svg class="search-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
     <input class="search-input" id="search" placeholder="Search by partner, type, region, or describe what you need..." oninput="filterTable()">
   </div>
   <div class="qs" id="qs">
