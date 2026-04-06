@@ -16,6 +16,13 @@ try:
 except:
     _DANIELA_B64 = ""
 
+try:
+    import sys as _sys
+    _sys.path.insert(0, _os.path.join(_BASE, "data"))
+    from partner_contacts import PARTNER_CONTACTS as _EXT_CONTACTS
+except:
+    _EXT_CONTACTS = {}
+
 # ── Page Config ────────────────────────────────────────────────────────────────
 st.set_page_config(
     page_title="PAPO · Yuno Partner Portal",
@@ -1371,15 +1378,28 @@ def show_partners():
                 "countries": sorted(_p_sot["COUNTRY_ISO"].dropna().unique().tolist()),
             }
 
+        # External contacts from partner files
+        _ext_key = p["name"].upper().replace("(","").replace(")","").strip()
+        _ext = _EXT_CONTACTS.get(_ext_key, {})
+        _comm_name = _ext.get("commercial_contact","") or (enrich["commercial_contact"] if enrich else manager)
+        _comm_email = _ext.get("commercial_email","")
+        _comm_phone = _ext.get("commercial_phone","")
+        _tech_name = _ext.get("technical_contact","") or (enrich["technical_contact"] if enrich else "—")
+        _tech_email = _ext.get("technical_email","")
+        _tech_phone = _ext.get("technical_phone","")
+        # Verticals from external data (Source of Truth features)
+        _ext_verts = _ext.get("verticals","")
+        _verticals_list = [v.strip() for v in _ext_verts.split(",") if v.strip()] if _ext_verts else (enrich["verticals"].split(", ") if enrich and enrich.get("verticals") else ["General"])
+
         _connector_data.append({
             "name": p["name"], "type": p["cat"], "region": p.get("region","—"), "country": country, "status": p["status"],
             "caps": _sot_caps,
             "contacts": [
-                {"name": enrich["commercial_contact"] if enrich else manager, "role": "Commercial", "email": "", "phone": "", "color": "#3B82F6"},
-                {"name": enrich["technical_contact"] if enrich else "—", "role": "Technical", "email": "", "phone": "", "color": "#10B981"},
+                {"name": _comm_name, "role": "Commercial", "email": _comm_email, "phone": _comm_phone, "color": "#3B82F6"},
+                {"name": _tech_name, "role": "Technical", "email": _tech_email, "phone": _tech_phone, "color": "#10B981"},
                 {"name": "Daniela Reyes", "role": "Escalation", "email": "", "phone": "", "color": "#EF4444"},
             ],
-            "verticals": (enrich["verticals"].split(", ") if enrich and enrich.get("verticals") else ["General"]),
+            "verticals": _verticals_list,
             "currencies": ["USD","Local"],
             "auth": {"type": "Full Auth", "settlement": "T+1", "settleCurrency": "Local / USD", "chargebackWindow": "90 days"},
             "onboarding": {"kyb": bool(p.get("nda")), "integration": enrich["onboarding"].split(",")[0] if enrich else "API", "timeline": enrich["onboarding"].split(",")[-1].strip() if enrich else "2-4 weeks", "localEntity": False, "jurisdiction": "—", "entityType": "Contact partnerships"},
@@ -1712,9 +1732,11 @@ setTimeout(function(){
 
             # Enrichment data lookup
             enrich = _PARTNER_ENRICHMENT.get(p["name"].upper().replace("(","").replace(")","").strip())
-            comm_contact = enrich["commercial_contact"] if enrich else manager
-            tech_contact = enrich["technical_contact"] if enrich else "—"
-            verticals = enrich["verticals"] if enrich else "—"
+            _ext_d = _EXT_CONTACTS.get(p["name"].upper().replace("(","").replace(")","").strip(), {})
+            comm_contact = _ext_d.get("commercial_contact","") or (enrich["commercial_contact"] if enrich else manager)
+            tech_contact = _ext_d.get("technical_contact","") or (enrich["technical_contact"] if enrich else "—")
+            _ext_verts_d = _ext_d.get("verticals","")
+            verticals = _ext_verts_d if _ext_verts_d else (enrich["verticals"] if enrich else "—")
             pricing = enrich["avg_pricing"] if enrich else "—"
             discount = enrich["discount_rate"] if enrich else "—"
             discount_cond = enrich["discount_condition"] if enrich else "—"
@@ -3187,11 +3209,20 @@ setTimeout(function(){
                 # Detail grid — contacts + commercial
                 dc1, dc2 = st.columns(2)
                 with dc1:
+                    _pkey = r["name"].upper().replace("(","").replace(")","").strip()
+                    _ec = _EXT_CONTACTS.get(_pkey, {})
+                    _cl = _ec.get("commercial_contact","") or enrich["commercial_contact"]
+                    _tl = _ec.get("technical_contact","") or enrich["technical_contact"]
+                    _ce = _ec.get("commercial_email","")
+                    _te = _ec.get("technical_email","")
+                    _ev = _ec.get("verticals","") or enrich["verticals"]
+                    _cl_line = f'{_cl}<br><span style="font-size:10px;color:#64748b;">{_ce}</span>' if _ce else _cl
+                    _tl_line = f'{_tl}<br><span style="font-size:10px;color:#64748b;">{_te}</span>' if _te else _tl
                     st.markdown(f'<div style="background:#fff;border:1px solid #e2e8f0;border-radius:10px;padding:18px 20px;">'
                                 f'<div style="font-size:10px;font-weight:700;color:#94a3b8;text-transform:uppercase;letter-spacing:0.8px;margin-bottom:12px;">Contacts & Verticals</div>'
-                                f'<div style="margin-bottom:10px;"><div style="font-size:10px;color:#94a3b8;">Commercial Lead</div><div style="font-size:13px;font-weight:600;color:#0f172a;">{enrich["commercial_contact"]}</div></div>'
-                                f'<div style="margin-bottom:10px;"><div style="font-size:10px;color:#94a3b8;">Technical Lead</div><div style="font-size:13px;font-weight:600;color:#0f172a;">{enrich["technical_contact"]}</div></div>'
-                                f'<div style="margin-bottom:10px;"><div style="font-size:10px;color:#94a3b8;">Focus Verticals</div><div style="font-size:12px;color:#334155;">{enrich["verticals"]}</div></div>'
+                                f'<div style="margin-bottom:10px;"><div style="font-size:10px;color:#94a3b8;">Commercial Lead</div><div style="font-size:13px;font-weight:600;color:#0f172a;">{_cl_line}</div></div>'
+                                f'<div style="margin-bottom:10px;"><div style="font-size:10px;color:#94a3b8;">Technical Lead</div><div style="font-size:13px;font-weight:600;color:#0f172a;">{_tl_line}</div></div>'
+                                f'<div style="margin-bottom:10px;"><div style="font-size:10px;color:#94a3b8;">Focus Verticals</div><div style="font-size:12px;color:#334155;">{_ev}</div></div>'
                                 f'<div><div style="font-size:10px;color:#94a3b8;">Rev Share</div><div style="font-size:13px;font-weight:600;color:#0f172a;">{enrich["revshare"]}</div></div>'
                                 f'</div>', unsafe_allow_html=True)
                 with dc2:
