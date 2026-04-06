@@ -1247,13 +1247,14 @@ def _export_pdf(df):
         pdf.set_text_color(28, 20, 51)
         for i, col in enumerate(cols):
             val = str(row[col]) if pd.notna(row[col]) else ""
+            val = val.replace("\u2014", "-").replace("\u2013", "-").replace("\u2018","'").replace("\u2019","'").replace("\u201c",'"').replace("\u201d",'"')
             pdf.cell(col_widths[i], 6, val[:35], border=0, fill=True)
         pdf.ln()
     # Footer line
     pdf.set_y(-20)
     pdf.set_font("Helvetica", "", 7)
     pdf.set_text_color(148, 163, 184)
-    pdf.cell(0, 5, "Confidential — Yuno Partner Portal", align="C")
+    pdf.cell(0, 5, "Confidential - Yuno Partner Portal", align="C")
     return bytes(pdf.output())
 
 
