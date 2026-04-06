@@ -123,13 +123,17 @@ tr.detail-row.open{display:table-row;}
 <div class="search-wrap">
   <div class="search-box">
     <svg class="search-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-    <input class="search-input" id="search" placeholder="Search by partner, type, region, or describe what you need..." oninput="filterTable()">
+    <input class="search-input" id="search" placeholder="Ask anything — contacts, features, pricing, settlement, regions..." oninput="filterTable()">
   </div>
   <div class="qs" id="qs">
-    <span onclick="setSearch('list of all acquirers and psps in brazil')">Acquirers & PSPs in Brazil</span>
-    <span onclick="setSearch('which acquirers accept gaming in APAC')">Gaming in APAC</span>
-    <span onclick="setSearch('lowest rate best performance north america')">Best performance in N. America</span>
-    <span onclick="setSearch('which partner accepts recurring in all regions')">Recurring in all regions</span>
+    <span onclick="setSearch('contact for Adyen')">Contact for Adyen</span>
+    <span onclick="setSearch('acquirers in brazil')">Acquirers in Brazil</span>
+    <span onclick="setSearch('which connectors accept gaming')">Gaming connectors</span>
+    <span onclick="setSearch('connectors with tokenization in LATAM')">Tokenization in LATAM</span>
+    <span onclick="setSearch('who supports recurring payments')">Recurring payments</span>
+    <span onclick="setSearch('connectors with payouts')">Payouts support</span>
+    <span onclick="setSearch('live connectors in APAC')">Live in APAC</span>
+    <span onclick="setSearch('settlement t+1')">T+1 settlement</span>
   </div>
 </div>
 
@@ -369,26 +373,62 @@ function filterTable(){
     document.getElementById('tbl-count').innerHTML='';
     return;
   }
-  // Smart query parsing
-  var aliases={"u.s.":"north america","usa":"north america","us":"north america","united states":"north america","uk":"europe","uae":"emea","emirates":"emea","brasil":"brasil","brazil":"brasil","saudi":"emea","ksa":"emea","mexico":"north america","colombia":"latam","argentina":"latam","chile":"latam","peru":"latam","singapore":"apac","india":"apac","japan":"apac","turkey":"emea"};
-  var countryAliases={"u.s.":"US","usa":"US","us":"US","united states":"US","brazil":"BR","brasil":"BR","mexico":"MX","colombia":"CO","argentina":"AR","chile":"CL","peru":"PE","uk":"GB","uae":"AE","saudi":"SA","turkey":"TR","india":"IN","singapore":"SG","japan":"JP"};
-  var stops=new Set(["the","a","an","in","into","for","to","and","or","of","with","is","by","on","at","from","which","what","are","all","list","can","you","we","our","has","have","that","does","do"]);
+  // ── Smart query parsing ──
+  var aliases={"u.s.":"north america","usa":"north america","us":"north america","united states":"north america","uk":"emea","uae":"emea","emirates":"emea","brasil":"brasil","brazil":"brasil","saudi":"emea","ksa":"emea","mexico":"latam","colombia":"latam","argentina":"latam","chile":"latam","peru":"latam","singapore":"apac","india":"apac","japan":"apac","turkey":"emea","indonesia":"apac","thailand":"apac","philippines":"apac","egypt":"emea","nigeria":"africa","south africa":"africa","kenya":"africa","ghana":"africa","canada":"north america","germany":"emea","france":"emea","spain":"emea","italy":"emea","netherlands":"emea","portugal":"emea","ecuador":"latam","paraguay":"latam","uruguay":"latam","bolivia":"latam","costa rica":"latam","panama":"latam","dominican republic":"latam"};
+  var countryAliases={"u.s.":"US","usa":"US","us":"US","united states":"US","brazil":"BR","brasil":"BR","mexico":"MX","colombia":"CO","argentina":"AR","chile":"CL","peru":"PE","uk":"GB","uae":"AE","saudi":"SA","turkey":"TR","india":"IN","singapore":"SG","japan":"JP","indonesia":"ID","thailand":"TH","philippines":"PH","egypt":"EG","nigeria":"NG","south africa":"ZA","kenya":"KE","germany":"DE","france":"FR","spain":"ES","italy":"IT","netherlands":"NL","portugal":"PT","canada":"CA","ecuador":"EC","paraguay":"PY","uruguay":"UY","costa rica":"CR","panama":"PA"};
+  var stops=new Set(["the","a","an","in","into","for","to","and","or","of","with","is","by","on","at","from","which","what","are","all","list","can","you","we","our","has","have","that","does","do","who","show","me","find","get","give","tell","about","support","supports","accept","accepts","connector","connectors","partner","partners","payment"]);
+
+  // Feature detection
   var wantsGaming=/(gaming|igaming|game)/i.test(q);
-  var wantsGambling=/(gambling|betting|casino)/i.test(q);
-  var wantsCrypto=/(crypto|bitcoin|web3)/i.test(q);
+  var wantsGambling=/(gambling|betting|casino|igaming)/i.test(q);
+  var wantsCrypto=/(crypto|bitcoin|web3|blockchain)/i.test(q);
   var wantsRecurring=/(recurring|subscription|recur)/i.test(q);
   var wantsAirlines=/(airline|aviation|flight)/i.test(q);
+  var wantsTokenization=/(token)/i.test(q);
+  var wantsPayouts=/(payout)/i.test(q);
+  var wantsInstallments=/(installment|cuota|parcela)/i.test(q);
+  var wantsHighRisk=/(high.risk|highrisk)/i.test(q);
+  var wantsForex=/(forex|fx trading)/i.test(q);
+  var wantsAdult=/(adult)/i.test(q);
+
+  // Type detection
   var wantsAcquirer=/(acquir)/i.test(q);
   var wantsPSP=/(psp|gateway|aggregat)/i.test(q);
-  var wantsAPM=/(apm|wallet|local method)/i.test(q);
-  var wantsLowRate=/(low|cheap|cost|affordable|lowest)/i.test(q) && /(rate|price|cost|pricing)/i.test(q);
+  var wantsAPM=/(apm|wallet|local method|local payment)/i.test(q);
+  var wantsFraud=/(fraud|risk|kyc|kyb)/i.test(q);
+
+  // Contact search
+  var wantsContact=/(contact|email|phone|reach|who is|manager|commercial|technical)/i.test(q);
+
+  // Pricing/settlement
+  var wantsLowRate=/(low|cheap|cost|affordable|lowest|best price|best rate)/i.test(q) && /(rate|price|cost|pricing)/i.test(q);
+  var wantsPricing=/(pric|rate|cost|fee|mdr|how much)/i.test(q);
+  var wantsSettlement=/(settlement|settle|t\+1|t\+2|t\+0|next day|same day)/i.test(q);
   var wantsBestPerf=/(best|high|top).*?(perform|approval|reliable)/i.test(q);
-  var wantsLive=/(live|active|ready)/i.test(q);
-  // Detect region from query
+  var wantsLive=/(live|active|ready|processing)/i.test(q);
+
+  // Payment method search
+  var wantsCard=/(card|visa|mastercard|amex)/i.test(q);
+  var wantsPix=/(pix)/i.test(q);
+  var wantsBoleto=/(boleto)/i.test(q);
+  var wantsNequi=/(nequi)/i.test(q);
+  var wantsPSE=/(pse)/i.test(q);
+  var wantsOXXO=/(oxxo)/i.test(q);
+
+  // Detect region/country from query
   var detectedRegion='';
   var detectedCountries=[];
   for(var alias in aliases){if(q.indexOf(alias)!==-1){detectedRegion=aliases[alias];break;}}
   for(var ca in countryAliases){if(q.indexOf(ca)!==-1){detectedCountries.push(countryAliases[ca]);}}
+
+  // Extract specific partner name for contact queries
+  var contactPartner='';
+  if(wantsContact){
+    var cm=q.match(/(?:contact|email|phone|reach|who is|manager)\s+(?:for|of|at)?\s*(.+)/i);
+    if(cm) contactPartner=cm[1].trim().toLowerCase().replace(/[?.!]/g,'');
+  }
+
+  var hasStructuredMatch=wantsAcquirer||wantsPSP||wantsAPM||wantsFraud||wantsGaming||wantsGambling||wantsCrypto||wantsRecurring||wantsAirlines||wantsTokenization||wantsPayouts||wantsInstallments||wantsHighRisk||wantsForex||wantsAdult||detectedRegion||wantsLive||wantsContact||wantsPricing||wantsSettlement||wantsCard||wantsPix||wantsBoleto||wantsNequi||wantsPSE||wantsOXXO||contactPartner;
 
   var filtered=DATA.filter(function(d){
     if(ft&&d.type!==ft)return false;
@@ -397,17 +437,40 @@ function filterTable(){
     if(fti){var dt=(d.tier||'').toLowerCase();if(fti==='Strategic'){if(dt.indexOf('strategic')===-1)return false;}else{if(dt.indexOf(fti.toLowerCase())===-1)return false;}}
     if(!q) return true;
     var caps=d.caps||{};
+
+    // Contact search — find specific partner
+    if(contactPartner){
+      return d.name.toLowerCase().indexOf(contactPartner)!==-1 || contactPartner.indexOf(d.name.toLowerCase())!==-1;
+    }
+
     // Type filter from query
-    if(wantsAcquirer && !wantsPSP && d.type!=='Acquirer') return false;
+    if(wantsAcquirer && !wantsPSP && !wantsFraud && d.type!=='Acquirer') return false;
     if(wantsPSP && !wantsAcquirer && d.type!=='PSP') return false;
     if(wantsAcquirer && wantsPSP && d.type!=='Acquirer' && d.type!=='PSP') return false;
     if(wantsAPM && d.type!=='APM') return false;
+    if(wantsFraud && d.type!=='Fraud') return false;
+
     // Capability filters
     if(wantsGaming && !caps.gaming) return false;
     if(wantsGambling && !caps.gambling) return false;
     if(wantsCrypto && !caps.crypto) return false;
     if(wantsRecurring && !caps.recurring) return false;
     if(wantsAirlines && !caps.airlines) return false;
+    if(wantsTokenization && !caps.tokenization) return false;
+    if(wantsPayouts && !caps.payouts) return false;
+    if(wantsInstallments && !caps.installments) return false;
+    if(wantsHighRisk && !(caps.gambling||caps.gaming||caps.crypto)) return false;
+    if(wantsForex && !caps.crypto) return false;
+    if(wantsAdult && !caps.gambling) return false;
+
+    // Payment method search
+    var pms=(d.paymentMethods||[]).join(' ').toLowerCase();
+    if(wantsPix && pms.indexOf('pix')===-1) return false;
+    if(wantsBoleto && pms.indexOf('boleto')===-1) return false;
+    if(wantsNequi && pms.indexOf('nequi')===-1) return false;
+    if(wantsPSE && pms.indexOf('pse')===-1) return false;
+    if(wantsOXXO && pms.indexOf('oxxo')===-1) return false;
+
     // Region filter
     if(detectedRegion){
       var pRegion=(d.region||'').toLowerCase();
@@ -415,31 +478,41 @@ function filterTable(){
       if(pRegion.indexOf(detectedRegion.toLowerCase())===-1 && !capRegions.some(function(r){return r.indexOf(detectedRegion.toLowerCase())!==-1;}) && detectedRegion.toLowerCase()!=='global' && pRegion!=='global') return false;
     }
     // Country filter
-    if(detectedCountries.length>0 && caps.countries){
-      if(!detectedCountries.some(function(c){return caps.countries.indexOf(c)!==-1;})){
-        // Fallback: check country field
-        var dc=detectedCountries.map(function(c){return c.toLowerCase();});
-        if(dc.indexOf((d.country||'').toLowerCase().substring(0,2))===-1 && (d.country||'').toLowerCase()!=='global') return false;
-      }
+    if(detectedCountries.length>0){
+      var capCountries=caps.countries||[];
+      var countryField=(d.country||'').toUpperCase();
+      if(!detectedCountries.some(function(c){return capCountries.indexOf(c)!==-1 || countryField.indexOf(c)!==-1;}) && countryField!=='GLOBAL') return false;
     }
     // Live filter
     if(wantsLive && d.status!=='Live') return false;
-    // Text match fallback (if no structured match happened)
-    if(!wantsAcquirer&&!wantsPSP&&!wantsAPM&&!wantsGaming&&!wantsGambling&&!wantsCrypto&&!wantsRecurring&&!wantsAirlines&&!detectedRegion&&!wantsLive){
-      var s=(d.name+' '+d.type+' '+d.region+' '+d.country+' '+d.status).toLowerCase();
+
+    // Text match fallback
+    if(!hasStructuredMatch){
+      var s=(d.name+' '+d.type+' '+d.region+' '+d.country+' '+d.status+' '+(d.verticals||[]).join(' ')+' '+(d.paymentMethods||[]).join(' ')+' '+(d.contacts||[]).map(function(c){return c.name+' '+c.email;}).join(' ')).toLowerCase();
       var tokens=q.split(/\s+/).filter(function(t){return t.length>1&&!stops.has(t);});
       if(tokens.length>0) return tokens.some(function(t){return s.indexOf(t)!==-1||s.split(/\s+/).some(function(w){return w.startsWith(t.substring(0,3));});});
     }
     return true;
   });
+
   // Smart sorting
   if(wantsLowRate) filtered.sort(function(a,b){return(a.strategic?0:1)-(b.strategic?0:1);});
   if(wantsBestPerf) filtered.sort(function(a,b){return((a.status==='Live'&&a.caps&&a.caps.recurring)?0:1)-((b.status==='Live'&&b.caps&&b.caps.recurring)?0:1);});
+  if(wantsContact) filtered.sort(function(a,b){var aN=a.name.toLowerCase(),bN=b.name.toLowerCase();if(contactPartner){if(aN===contactPartner)return -1;if(bN===contactPartner)return 1;}return aN.localeCompare(bN);});
+  if(wantsPricing) filtered.sort(function(a,b){var pa=(a.pricing||{}).standard||'zzz',pb=(b.pricing||{}).standard||'zzz';return(pa==='TBD'||pa==='—'?1:0)-(pb==='TBD'||pb==='—'?1:0);});
   if(sort==='name')filtered.sort(function(a,b){return a.name.localeCompare(b.name);});
   if(sort==='status')filtered.sort(function(a,b){return(a.status==='Live'?0:1)-(b.status==='Live'?0:1);});
   if(sort==='type')filtered.sort(function(a,b){return a.type.localeCompare(b.type);});
 
   render(filtered);
+
+  // Auto-open detail for contact/pricing queries with single or few results
+  if((wantsContact||wantsPricing||wantsSettlement) && filtered.length>0 && filtered.length<=5){
+    setTimeout(function(){
+      var row=document.querySelector('#tbody tr.row');
+      if(row) row.click();
+    },50);
+  }
 }
 
 function setSearch(q){document.getElementById('search').value=q;filterTable();}
