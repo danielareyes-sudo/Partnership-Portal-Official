@@ -1206,126 +1206,144 @@ def _export_pdf(df):
     pdf.set_auto_page_break(auto=True, margin=15)
     pdf.add_page()
     pdf.set_fill_color(255, 255, 255)
-    # Logo
+    # Yuno logo
     logo_path = _os.path.join(_BASE, "Yuno logo.png")
     if _os.path.exists(logo_path):
-        pdf.image(logo_path, x=10, y=8, w=40)
-    pdf.ln(22)
-    pdf.set_font("Helvetica", "B", 16)
-    pdf.cell(0, 10, "Partner Portfolio Export", ln=True)
+        pdf.image(logo_path, x=10, y=8, w=35, h=35)
+    # Title next to logo
+    pdf.set_xy(50, 14)
+    pdf.set_font("Helvetica", "B", 20)
+    pdf.set_text_color(62, 79, 224)
+    pdf.cell(0, 10, "Yuno", ln=False)
+    pdf.set_xy(50, 24)
+    pdf.set_font("Helvetica", "B", 14)
+    pdf.set_text_color(28, 20, 51)
+    pdf.cell(0, 8, "Partner Portfolio Export", ln=True)
+    pdf.set_xy(50, 33)
     pdf.set_font("Helvetica", "", 9)
+    pdf.set_text_color(100, 116, 139)
     pdf.cell(0, 6, f"Generated on {pd.Timestamp.now().strftime('%B %d, %Y')}", ln=True)
-    pdf.ln(6)
-    # Table header
+    pdf.ln(8)
+    # Table
     cols = list(df.columns)
-    col_widths = [55, 30, 30, 30, 35, 35, 55]
+    n_cols = len(cols)
+    avail_w = 277
+    col_w = avail_w / n_cols
+    col_widths = [col_w] * n_cols
+    # Header
     pdf.set_font("Helvetica", "B", 8)
-    pdf.set_fill_color(79, 70, 229)
+    pdf.set_fill_color(62, 79, 224)
     pdf.set_text_color(255, 255, 255)
     for i, col in enumerate(cols):
-        pdf.cell(col_widths[i], 7, col, border=1, fill=True)
+        pdf.cell(col_widths[i], 7, col, border=0, fill=True)
     pdf.ln()
-    # Table rows
+    # Rows
     pdf.set_font("Helvetica", "", 7)
-    pdf.set_text_color(0, 0, 0)
-    for _, row in df.iterrows():
+    for r_idx, (_, row) in enumerate(df.iterrows()):
+        if r_idx % 2 == 1:
+            pdf.set_fill_color(248, 250, 252)
+        else:
+            pdf.set_fill_color(255, 255, 255)
+        pdf.set_text_color(28, 20, 51)
         for i, col in enumerate(cols):
             val = str(row[col]) if pd.notna(row[col]) else ""
-            pdf.cell(col_widths[i], 6, val[:30], border=1)
+            pdf.cell(col_widths[i], 6, val[:35], border=0, fill=True)
         pdf.ln()
+    # Footer line
+    pdf.set_y(-20)
+    pdf.set_font("Helvetica", "", 7)
+    pdf.set_text_color(148, 163, 184)
+    pdf.cell(0, 5, "Confidential — Yuno Partner Portal", align="C")
     return bytes(pdf.output())
 
 
 def _export_pptx(df):
     from pptx import Presentation
-    from pptx.util import Inches, Pt, Emu
+    from pptx.util import Inches, Pt
     from pptx.dml.color import RGBColor
-    from pptx.enum.text import PP_ALIGN
-    prs = Presentation()
-    prs.slide_width = Inches(13.333)
-    prs.slide_height = Inches(7.5)
+    import io
+    # Use Yuno template if available
+    tpl_path = _os.path.join(_BASE, "data", "template.pptx")
+    if _os.path.exists(tpl_path):
+        prs = Presentation(tpl_path)
+        # Remove all existing slides (keep template layouts/master)
+        while len(prs.slides) > 0:
+            rId = prs.slides._sldIdLst[0].rId
+            prs.part.drop_rel(rId)
+            del prs.slides._sldIdLst[0]
+    else:
+        prs = Presentation()
+        prs.slide_width = Inches(13.333)
+        prs.slide_height = Inches(7.5)
+    # Find title layout (first with TITLE placeholder) or fallback to first
+    title_layout = prs.slide_layouts[0]
+    content_layout = prs.slide_layouts[0]
+    for sl in prs.slide_layouts:
+        if "title" in sl.name.lower():
+            title_layout = sl
+            break
+    for sl in prs.slide_layouts:
+        if "content" in sl.name.lower():
+            content_layout = sl
+            break
+    # Brand colors from template theme
+    brand_blue = RGBColor(0x3E, 0x4F, 0xE0)
+    dark = RGBColor(0x28, 0x2A, 0x30)
+    white = RGBColor(0xFF, 0xFF, 0xFF)
+    gray = RGBColor(0x6B, 0x72, 0x80)
     # Title slide
-    slide = prs.slides.add_slide(prs.slide_layouts[6])  # blank
-    slide.background.fill.solid()
-    slide.background.fill.fore_color.rgb = RGBColor(0xFF, 0xFF, 0xFF)
-    # Logo
-    logo_path = _os.path.join(_BASE, "Yuno logo.png")
-    if _os.path.exists(logo_path):
-        slide.shapes.add_picture(logo_path, Inches(0.5), Inches(0.3), width=Inches(1.8))
-    txBox = slide.shapes.add_textbox(Inches(0.5), Inches(2.5), Inches(12), Inches(1.5))
-    tf = txBox.text_frame
-    p = tf.paragraphs[0]
-    p.text = "Partner Portfolio"
-    p.font.size = Pt(36)
-    p.font.bold = True
-    p.font.color.rgb = RGBColor(0x1C, 0x14, 0x33)
-    p2 = tf.add_paragraph()
-    p2.text = f"Generated on {pd.Timestamp.now().strftime('%B %d, %Y')}"
-    p2.font.size = Pt(14)
-    p2.font.color.rgb = RGBColor(0x6B, 0x72, 0x80)
-    # Data slide with table
+    slide = prs.slides.add_slide(title_layout)
+    for ph in slide.placeholders:
+        if ph.placeholder_format.type is not None:
+            if ph.placeholder_format.idx == 0:
+                ph.text = "Partner Portfolio"
+                for p in ph.text_frame.paragraphs:
+                    p.font.size = Pt(36)
+                    p.font.bold = True
+                    p.font.color.rgb = dark
+                    p.font.name = "Arial"
+            elif ph.placeholder_format.idx == 1:
+                ph.text = f"Generated on {pd.Timestamp.now().strftime('%B %d, %Y')}"
+                for p in ph.text_frame.paragraphs:
+                    p.font.size = Pt(16)
+                    p.font.color.rgb = gray
+                    p.font.name = "Arial"
+    # Data slides
     cols = list(df.columns)
-    max_rows = min(len(df), 30)
-    slide2 = prs.slides.add_slide(prs.slide_layouts[6])
-    slide2.background.fill.solid()
-    slide2.background.fill.fore_color.rgb = RGBColor(0xFF, 0xFF, 0xFF)
-    if _os.path.exists(logo_path):
-        slide2.shapes.add_picture(logo_path, Inches(0.5), Inches(0.15), width=Inches(1.2))
-    tbl_shape = slide2.shapes.add_table(max_rows + 1, len(cols), Inches(0.3), Inches(0.8), Inches(12.7), Inches(6.2))
-    tbl = tbl_shape.table
-    # Header
-    for i, col in enumerate(cols):
-        cell = tbl.cell(0, i)
-        cell.text = col
-        cell.fill.solid()
-        cell.fill.fore_color.rgb = RGBColor(0x4F, 0x46, 0xE5)
-        for paragraph in cell.text_frame.paragraphs:
-            paragraph.font.size = Pt(9)
-            paragraph.font.bold = True
-            paragraph.font.color.rgb = RGBColor(0xFF, 0xFF, 0xFF)
-    # Rows
-    for r_idx in range(max_rows):
-        for c_idx, col in enumerate(cols):
-            cell = tbl.cell(r_idx + 1, c_idx)
-            val = str(df.iloc[r_idx][col]) if pd.notna(df.iloc[r_idx][col]) else ""
-            cell.text = val
-            cell.fill.solid()
-            cell.fill.fore_color.rgb = RGBColor(0xFF, 0xFF, 0xFF)
-            for paragraph in cell.text_frame.paragraphs:
-                paragraph.font.size = Pt(8)
-                paragraph.font.color.rgb = RGBColor(0x1C, 0x14, 0x33)
-    # Additional slides for remaining rows if > 30
-    remaining = df.iloc[max_rows:]
-    while len(remaining) > 0:
-        chunk = remaining.iloc[:30]
-        remaining = remaining.iloc[30:]
-        slide_n = prs.slides.add_slide(prs.slide_layouts[6])
-        slide_n.background.fill.solid()
-        slide_n.background.fill.fore_color.rgb = RGBColor(0xFF, 0xFF, 0xFF)
-        if _os.path.exists(logo_path):
-            slide_n.shapes.add_picture(logo_path, Inches(0.5), Inches(0.15), width=Inches(1.2))
-        tbl_shape_n = slide_n.shapes.add_table(len(chunk) + 1, len(cols), Inches(0.3), Inches(0.8), Inches(12.7), Inches(6.2))
-        tbl_n = tbl_shape_n.table
+    chunk_size = 22
+    for start in range(0, len(df), chunk_size):
+        chunk = df.iloc[start:start + chunk_size]
+        slide_n = prs.slides.add_slide(content_layout)
+        # Clear placeholders
+        for ph in slide_n.placeholders:
+            ph.text = ""
+        # Add table
+        n_rows = len(chunk) + 1
+        tbl_shape = slide_n.shapes.add_table(n_rows, len(cols), Inches(0.4), Inches(0.9), Inches(12.5), Inches(6.0))
+        tbl = tbl_shape.table
+        # Header
         for i, col in enumerate(cols):
-            cell = tbl_n.cell(0, i)
+            cell = tbl.cell(0, i)
             cell.text = col
             cell.fill.solid()
-            cell.fill.fore_color.rgb = RGBColor(0x4F, 0x46, 0xE5)
-            for paragraph in cell.text_frame.paragraphs:
-                paragraph.font.size = Pt(9)
-                paragraph.font.bold = True
-                paragraph.font.color.rgb = RGBColor(0xFF, 0xFF, 0xFF)
+            cell.fill.fore_color.rgb = brand_blue
+            for p in cell.text_frame.paragraphs:
+                p.font.size = Pt(9)
+                p.font.bold = True
+                p.font.color.rgb = white
+                p.font.name = "Arial"
+        # Rows
         for r_idx in range(len(chunk)):
             for c_idx, col in enumerate(cols):
-                cell = tbl_n.cell(r_idx + 1, c_idx)
+                cell = tbl.cell(r_idx + 1, c_idx)
                 val = str(chunk.iloc[r_idx][col]) if pd.notna(chunk.iloc[r_idx][col]) else ""
                 cell.text = val
                 cell.fill.solid()
-                cell.fill.fore_color.rgb = RGBColor(0xFF, 0xFF, 0xFF)
-                for paragraph in cell.text_frame.paragraphs:
-                    paragraph.font.size = Pt(8)
-                    paragraph.font.color.rgb = RGBColor(0x1C, 0x14, 0x33)
-    import io
+                cell.fill.fore_color.rgb = RGBColor(0xF8, 0xFA, 0xFC) if r_idx % 2 == 1 else white
+                for p in cell.text_frame.paragraphs:
+                    p.font.size = Pt(8)
+                    p.font.color.rgb = dark
+                    p.font.name = "Arial"
     buf = io.BytesIO()
     prs.save(buf)
     return buf.getvalue()
