@@ -1343,7 +1343,7 @@ def show_partners():
     # Build JSON data for the HTML component
     import json as _json
     _connector_data = []
-    for p in PARTNERS_DATA[:100]:
+    for p in PARTNERS_DATA:
         enrich = _PARTNER_ENRICHMENT.get(p["name"].upper().replace("(","").replace(")","").strip())
         manager = p.get("manager","—")
         if manager == "nan": manager = "—"
