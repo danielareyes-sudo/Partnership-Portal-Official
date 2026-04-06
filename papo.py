@@ -1150,7 +1150,14 @@ def _build_partners_df():
 
 
 def _export_csv(df):
-    return df.to_csv(index=False).encode("utf-8")
+    import io
+    buf = io.StringIO()
+    buf.write("Yuno — Partner Portfolio Export\n")
+    buf.write(f"Generated on {pd.Timestamp.now().strftime('%B %d, %Y')}\n")
+    buf.write("Logo: See Yuno logo included in PDF/Google Slides exports\n")
+    buf.write("\n")
+    df.to_csv(buf, index=False)
+    return buf.getvalue().encode("utf-8")
 
 
 def _export_pdf(df):
@@ -1297,14 +1304,14 @@ def show_partners():
     # ── Export button ────────────────────────────────────────────────────────
     _exp_col1, _exp_col2, _exp_col3 = st.columns([6, 2, 2])
     with _exp_col2:
-        export_fmt = st.selectbox("Export format", ["PDF", "CSV", "PowerPoint"], key="export_fmt", label_visibility="collapsed")
+        export_fmt = st.selectbox("Export format", ["PDF", "CSV", "Google Slides"], key="export_fmt", label_visibility="collapsed")
     with _exp_col3:
         _partners_df = _build_partners_df()
         if export_fmt == "CSV":
             st.download_button("⬇ Download Export", data=_export_csv(_partners_df), file_name="Yuno_Partner_Portfolio.csv", mime="text/csv", use_container_width=True)
         elif export_fmt == "PDF":
             st.download_button("⬇ Download Export", data=_export_pdf(_partners_df), file_name="Yuno_Partner_Portfolio.pdf", mime="application/pdf", use_container_width=True)
-        elif export_fmt == "PowerPoint":
+        elif export_fmt == "Google Slides":
             st.download_button("⬇ Download Export", data=_export_pptx(_partners_df), file_name="Yuno_Partner_Portfolio.pptx", mime="application/vnd.openxmlformats-officedocument.presentationml.presentation", use_container_width=True)
 
     # ── Build connector data for HTML component ─────────────────────────────
@@ -3555,7 +3562,6 @@ def show_mission_control():
     with open(_html_file, "r") as _f:
         _html_content = _f.read()
     _html_content = _html_content.replace("var DATA = [];", f"var DATA = {_mc_json};")
-    _html_content = _html_content.replace("var YUNO_LOGO_B64='';", f"var YUNO_LOGO_B64='{_LOGO_B64}';")
     components.html(_html_content, height=1800, scrolling=True)
     return
 
