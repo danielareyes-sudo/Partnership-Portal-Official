@@ -4019,14 +4019,34 @@ if st.session_state.role is None:
     show_landing()
 else:
     show_sidebar()
-    # Top-right "Landing Page" button
+    # Top-right sign out button
     _top_left, _top_right = st.columns([9, 1])
     with _top_right:
-        if st.button("← Landing", key="goto_landing", use_container_width=True):
+        if st.button("Sign out", key="goto_landing", use_container_width=True):
             st.session_state.role = None
             st.session_state.page = "Home"
             st.query_params.clear()
             st.rerun()
+    # Style the sign-out button
+    st.markdown("""<style>
+    button[data-testid="baseButton-secondary"][kind="secondary"]:has(~ div) {},
+    [data-testid="stMain"] [data-testid="stColumns"]:first-of-type [data-testid="stColumn"]:last-child button {
+        background: transparent !important;
+        border: 1px solid #E2E8F0 !important;
+        border-radius: 8px !important;
+        color: #64748B !important;
+        font-size: 12px !important;
+        font-weight: 600 !important;
+        padding: 6px 14px !important;
+        transition: all 0.15s !important;
+        letter-spacing: 0.01em !important;
+    }
+    [data-testid="stMain"] [data-testid="stColumns"]:first-of-type [data-testid="stColumn"]:last-child button:hover {
+        background: #F8FAFC !important;
+        border-color: #CBD5E1 !important;
+        color: #334155 !important;
+    }
+    </style>""", unsafe_allow_html=True)
     page = st.session_state.page
     if page == "Home":
         show_home()
