@@ -41,24 +41,26 @@ html,body{min-height:100vh;font-family:var(--font);background:var(--bg);color:va
 .qs span{font-size:10px;font-weight:500;color:var(--ghost);padding:5px 12px;border:0.5px solid var(--line);border-radius:7px;background:var(--bg);cursor:pointer;transition:all 0.12s;}
 .qs span:hover{color:var(--indigo);border-color:#A5B4FC;background:#EEF2FF;}
 
-/* FILTERS */
-.filter-row{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;gap:12px;flex-wrap:wrap;}
-.filter-toggle{font-size:12px;font-weight:600;color:var(--indigo);cursor:pointer;display:flex;align-items:center;gap:5px;}
+/* TOOLBAR */
+.toolbar{background:var(--white);border:0.5px solid var(--line);border-radius:12px;padding:12px 16px;margin-bottom:12px;display:flex;flex-direction:column;gap:10px;}
+.tb-top{display:flex;align-items:center;justify-content:space-between;gap:10px;}
+.tb-left{display:flex;align-items:center;gap:8px;flex-wrap:wrap;flex:1;}
+.tb-count{font-size:12px;color:var(--ghost);font-weight:500;white-space:nowrap;}
+.tb-count b{color:var(--ink);font-weight:700;}
+.tb-toggle{font-size:11px;color:var(--slate);font-weight:500;display:flex;align-items:center;gap:5px;cursor:pointer;user-select:none;white-space:nowrap;}
+.tb-toggle input{width:14px;height:14px;accent-color:var(--indigo);cursor:pointer;}
+.tb-filters{display:flex;align-items:center;gap:6px;flex-wrap:wrap;}
+.f-select{padding:6px 10px;border:1px solid var(--line);border-radius:7px;font-size:11px;font-family:var(--font);color:var(--slate);background:var(--white);outline:none;min-width:90px;transition:border-color 0.12s;}
+.f-select:focus{border-color:var(--indigo);}
+.f-select.active{border-color:var(--indigo);color:var(--indigo);font-weight:600;background:#FAFAFF;}
 .dl-wrap{position:relative;}
-.dl-btn{background:linear-gradient(135deg,#4F46E5,#6366F1);color:#fff;border:none;border-radius:8px;padding:7px 18px;font-size:11px;font-weight:700;cursor:pointer;font-family:var(--font);display:flex;align-items:center;gap:6px;transition:all 0.15s;box-shadow:0 2px 8px rgba(79,70,229,0.25);}
-.dl-btn:hover{box-shadow:0 4px 16px rgba(79,70,229,0.4);transform:translateY(-1px);}
-.dl-btn:active{transform:translateY(0);box-shadow:0 1px 4px rgba(79,70,229,0.2);}
-.dl-menu{display:none;position:absolute;right:0;top:calc(100% + 6px);background:#fff;border:1px solid var(--line);border-radius:10px;box-shadow:0 8px 32px rgba(0,0,0,0.12);z-index:50;min-width:180px;overflow:hidden;animation:dlFade 0.15s ease;}
-@keyframes dlFade{from{opacity:0;transform:translateY(-4px);}to{opacity:1;transform:translateY(0);}}
-.dl-item{padding:11px 18px;font-size:12px;font-weight:600;cursor:pointer;color:var(--ink);display:flex;align-items:center;gap:8px;border-bottom:1px solid #F5F5F5;transition:background 0.1s;}
+.dl-btn{background:var(--ink);color:#A5B4FC;border:none;border-radius:8px;padding:7px 14px;font-size:11px;font-weight:600;cursor:pointer;font-family:var(--font);display:flex;align-items:center;gap:5px;transition:all 0.12s;white-space:nowrap;}
+.dl-btn:hover{background:#1a2236;}
+.dl-menu{display:none;position:absolute;right:0;top:calc(100% + 4px);background:#fff;border:1px solid var(--line);border-radius:8px;box-shadow:0 8px 24px rgba(0,0,0,0.1);z-index:50;min-width:140px;overflow:hidden;animation:dlFade 0.12s ease;}
+@keyframes dlFade{from{opacity:0;transform:translateY(-3px);}to{opacity:1;transform:translateY(0);}}
+.dl-item{padding:9px 16px;font-size:11px;font-weight:600;cursor:pointer;color:var(--ink);border-bottom:1px solid #F5F5F5;transition:background 0.1s;}
 .dl-item:last-child{border-bottom:none;}
 .dl-item:hover{background:#F8FAFC;}
-.col-chip{font-size:10px;font-weight:600;padding:3px 9px;border-radius:6px;border:1px solid var(--line);background:#F8FAFC;cursor:pointer;color:#CBD5E1;transition:all 0.12s;font-family:var(--font);user-select:none;text-decoration:line-through;}
-.col-chip.on{background:#EEF2FF;border-color:#A5B4FC;color:var(--indigo);text-decoration:none;}
-.filter-bar{display:none;gap:8px;margin-bottom:14px;flex-wrap:wrap;align-items:center;}
-.filter-bar.show{display:flex;}
-.col-divider{width:1px;height:24px;background:var(--line);margin:0 4px;}
-.f-select{padding:8px 12px;border:0.5px solid var(--line);border-radius:8px;font-size:12px;font-family:var(--font);color:var(--slate);background:var(--white);outline:none;min-width:120px;}
 
 /* TABLE */
 .tbl-card{background:var(--white);border:0.5px solid var(--line);border-radius:12px;overflow:hidden;}
@@ -131,16 +133,24 @@ tr.detail-row.open{display:table-row;}
   </div>
 </div>
 
-<!-- FILTERS & COLUMNS -->
-<div class="filter-row">
-  <div class="filter-toggle" onclick="document.getElementById('fbar').classList.toggle('show')">▸ Filters</div>
-  <div style="display:flex;align-items:center;gap:8px;">
-    <div id="col-checks" style="display:flex;flex-wrap:wrap;gap:5px;align-items:center;"></div>
-    <div class="col-divider"></div>
+<!-- TOOLBAR -->
+<div class="toolbar">
+  <div class="tb-top">
+    <div class="tb-left">
+      <div class="tb-filters">
+        <select class="f-select" id="f-type" onchange="onFilterChange()"><option value="">Type</option><option>PSP</option><option>Acquirer</option><option>APM</option><option>Fraud</option><option>BaaS</option></select>
+        <select class="f-select" id="f-region" onchange="onFilterChange()"><option value="">Region</option><option>Global</option><option>LATAM</option><option>Brasil</option><option>EMEA</option><option>APAC</option><option>North America</option><option>Africa</option></select>
+        <select class="f-select" id="f-status" onchange="onFilterChange()"><option value="">Status</option><option>Live</option><option>Agreement Signed</option><option>Agreement Review</option><option>Negotiation</option><option>Prospect</option></select>
+        <select class="f-select" id="f-tier" onchange="onFilterChange()"><option value="">Tier</option><option>Strategic</option><option>Tier 1</option><option>Tier 2</option><option>Tier 3</option></select>
+        <select class="f-select" id="f-sort" onchange="filterTable()"><option value="">Sort</option><option value="name">Name</option><option value="status">Status</option><option value="type">Type</option></select>
+      </div>
+      <label class="tb-toggle"><input type="checkbox" id="show-all" checked onchange="filterTable()"> Show all</label>
+      <span class="tb-count" id="tbl-count"></span>
+    </div>
     <div class="dl-wrap" id="dl-wrap">
       <button class="dl-btn" onclick="document.getElementById('dl-menu').style.display=document.getElementById('dl-menu').style.display==='block'?'none':'block';">
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
-        Download <span style="font-size:9px;opacity:0.7;">▾</span>
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+        Export ▾
       </button>
       <div class="dl-menu" id="dl-menu">
         <div class="dl-item" onclick="exportPDF()">PDF</div>
@@ -150,24 +160,8 @@ tr.detail-row.open{display:table-row;}
     </div>
   </div>
 </div>
-<div class="filter-bar" id="fbar">
-  <select class="f-select" id="f-type" onchange="filterTable()"><option value="">Type</option><option>PSP</option><option>Acquirer</option><option>APM</option><option>Fraud</option><option>BaaS</option></select>
-  <select class="f-select" id="f-region" onchange="filterTable()"><option value="">Region</option><option>Global</option><option>LATAM</option><option>Brasil</option><option>EMEA</option><option>APAC</option><option>North America</option><option>Africa</option></select>
-  <select class="f-select" id="f-status" onchange="filterTable()"><option value="">Status</option><option>Live</option><option>Agreement Signed</option><option>Agreement Review</option><option>Negotiation</option><option>Prospect</option></select>
-  <select class="f-select" id="f-tier" onchange="filterTable()"><option value="">Tier</option><option>Strategic</option><option>Tier 1</option><option>Tier 2</option><option>Tier 3</option></select>
-  <select class="f-select" id="f-sort" onchange="filterTable()"><option value="">Sort by</option><option value="name">Name</option><option value="status">Status</option><option value="type">Type</option></select>
-</div>
-
-<!-- SHOW ALL TOGGLE -->
-<div style="display:flex;align-items:center;gap:8px;margin-bottom:10px;">
-  <label style="display:flex;align-items:center;gap:6px;cursor:pointer;font-size:13px;color:#334155;font-weight:500;">
-    <input type="checkbox" id="show-all" checked onchange="filterTable()" style="width:16px;height:16px;accent-color:#5B5FDE;cursor:pointer;">
-    Show all Yuno connectors
-  </label>
-</div>
 
 <!-- TABLE -->
-<div class="tbl-count" id="tbl-count"><b>10</b> connectors</div>
 <div class="tbl-card">
 <table>
   <thead><tr id="thead-row"><th>Connector Name</th><th>Type</th><th>Region</th><th>Country</th><th>Status</th></tr></thead>
@@ -462,27 +456,29 @@ var ALL_COLS=[
   {key:'tier',label:'Tier',get:function(d){return d.tier||'TBD';}},
   {key:'manager',label:'Manager',get:function(d){return d.contacts&&d.contacts[0]?d.contacts[0].name:'TBD';}}
 ];
-var selectedCols={name:true,type:true,region:true,country:true,status:true,tier:true,manager:true};
+// Auto-determine visible columns: Name + Type always on, others based on active filters
+var selectedCols={name:true,type:true,region:true,country:true,status:true,tier:false,manager:false};
+
+function onFilterChange(){
+  // Auto-show columns when their filter is active
+  var ft=document.getElementById('f-type').value;
+  var fr=document.getElementById('f-region').value;
+  var fs=document.getElementById('f-status').value;
+  var fti=document.getElementById('f-tier').value;
+  // Always show Name + Type. Show others based on filter or default
+  selectedCols.region=true; // always useful
+  selectedCols.country=true; // always useful
+  selectedCols.status = !!fs || true; // show by default
+  selectedCols.tier = !!fti; // only show when filtered
+  // Highlight active selects
+  document.getElementById('f-type').className='f-select'+(ft?' active':'');
+  document.getElementById('f-region').className='f-select'+(fr?' active':'');
+  document.getElementById('f-status').className='f-select'+(fs?' active':'');
+  document.getElementById('f-tier').className='f-select'+(fti?' active':'');
+  filterTable();
+}
 
 render(DATA);
-
-function renderColChecks(){
-  var container=document.getElementById('col-checks');
-  container.innerHTML='';
-  ALL_COLS.forEach(function(c){
-    var span=document.createElement('span');
-    span.className='col-chip'+(selectedCols[c.key]?' on':'');
-    span.textContent=c.label;
-    span.addEventListener('click',function(e){
-      e.preventDefault();e.stopPropagation();
-      selectedCols[c.key]=!selectedCols[c.key];
-      renderColChecks();
-      filterTable();
-    });
-    container.appendChild(span);
-  });
-}
-renderColChecks();
 
 // Close download menu on outside click
 document.addEventListener('click',function(e){
