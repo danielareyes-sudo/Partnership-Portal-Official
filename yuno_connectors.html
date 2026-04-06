@@ -370,7 +370,8 @@ function filterTable(){
   var fti=document.getElementById('f-tier').value;
   var showAll=document.getElementById('show-all').checked;
   if(!showAll && !q && !ft && !fr && !fs && !fti){
-    document.getElementById('tbody').innerHTML='<tr><td colspan="5" style="text-align:center;padding:40px;color:#94a3b8;font-size:13px;">Search above or check "Show all Yuno connectors" to browse the full list.</td></tr>';
+    var _vc=TBL_COLS.filter(function(c){return selectedCols[c.key];}).length||5;
+    document.getElementById('tbody').innerHTML='<tr><td colspan="'+_vc+'" style="text-align:center;padding:40px;color:#94a3b8;font-size:13px;">Search above or check "Show all Yuno connectors" to browse the full list.</td></tr>';
     document.getElementById('tbl-count').innerHTML='';
     return;
   }
@@ -449,12 +450,9 @@ function filterTable(){
 
 function setSearch(q){document.getElementById('search').value=q;filterTable();}
 
-render(DATA);
-
 var YUNO_LOGO_B64='';
 
-// Table columns (indices match <th> order: 0=Name,1=Type,2=Region,3=Country,4=Status)
-// Extra export-only cols: Tier, Manager
+// All columns (table + export-only)
 var ALL_COLS=[
   {key:'name',label:'Name',get:function(d){return d.name;}},
   {key:'type',label:'Type',get:function(d){return d.type;}},
@@ -465,6 +463,8 @@ var ALL_COLS=[
   {key:'manager',label:'Manager',get:function(d){return d.contacts&&d.contacts[0]?d.contacts[0].name:'TBD';}}
 ];
 var selectedCols={name:true,type:true,region:true,country:true,status:true,tier:true,manager:true};
+
+render(DATA);
 
 function renderColChecks(){
   var container=document.getElementById('col-checks');
