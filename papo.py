@@ -1434,12 +1434,19 @@ def show_partners():
     st.download_button("Download Excel", data=_export_excel(_partners_df),
                        file_name="Yuno_Partner_Portfolio.xlsx",
                        mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", key="st_xlsx_dl")
-    st.markdown("""<style>
-    [data-testid="stMain"] div:has(> button[data-testid*="st_pdf_dl"]),
-    [data-testid="stMain"] div:has(> button[data-testid*="st_xlsx_dl"]) {
-        position:absolute !important;opacity:0 !important;height:1px !important;overflow:hidden !important;pointer-events:auto !important;
-    }
-    </style>""", unsafe_allow_html=True)
+    # Hide the download buttons visually but keep them clickable by JS
+    components.html("""<script>
+    setTimeout(function(){
+      var doc=window.parent.document;
+      doc.querySelectorAll('button').forEach(function(btn){
+        var t=btn.textContent.trim();
+        if(t==='Download PDF'||t==='Download Excel'){
+          var el=btn.closest('[data-testid="stElementContainer"]')||btn.parentElement;
+          el.style.cssText='position:absolute!important;opacity:0!important;height:0!important;overflow:hidden!important;pointer-events:auto!important;';
+        }
+      });
+    },200);
+    </script>""", height=0)
 
     components.html(_html_content, height=2400, scrolling=True)
     return
