@@ -784,13 +784,19 @@ function exportExcel(){
         cell.border={bottom:{style:'hair',color:{argb:'FFE2E8F0'}},left:{style:'hair',color:{argb:'FFE2E8F0'}},right:{style:'hair',color:{argb:'FFE2E8F0'}}};
       });
     });
-    // Confidential footer
-    var footerRow=hdrRowNum+1+exportRows.length+1;
+    // Spacer row
+    var spRow=hdrRowNum+1+exportRows.length;
+    ws.getRow(spRow).height=10;
+    // Confidential footer — directly after data, no gap
+    var footerRow=spRow+1;
     ws.mergeCells(footerRow,1,footerRow,nc);
-    ws.getCell(footerRow,1).value='Confidential Yuno x Mastercard';
-    ws.getCell(footerRow,1).font={name:'Arial',size:8,italic:true,color:{argb:'FF94A3B8'}};
-    ws.getCell(footerRow,1).alignment={horizontal:'center',vertical:'middle'};
-    ws.getRow(footerRow).height=20;
+    var fc=ws.getCell(footerRow,1);
+    fc.value='Confidential Yuno x Mastercard';
+    fc.font={name:'Arial',size:10,bold:true,italic:true,color:{argb:'FF3E4FE0'}};
+    fc.alignment={horizontal:'center',vertical:'middle'};
+    fc.fill={type:'pattern',pattern:'solid',fgColor:{argb:'FFF0F1FE'}};
+    fc.border={top:{style:'thin',color:{argb:'FF3E4FE0'}},bottom:{style:'thin',color:{argb:'FF3E4FE0'}}};
+    ws.getRow(footerRow).height=28;
     // Column widths
     exportCols.forEach(function(c,i){
       var maxLen=c.length;
