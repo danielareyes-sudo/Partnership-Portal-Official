@@ -601,7 +601,12 @@ function getExportRows(){
   var active=ALL_COLS.filter(function(c){return selectedCols[c.key];});
   var cols=active.map(function(c){return c.label;});
   var rows=DATA.map(function(d){return active.map(function(c){return c.get(d);});});
-  return {cols:cols,rows:rows,count:active.length};
+  // Metrics
+  var totalPartners=DATA.length;
+  var byType={};DATA.forEach(function(d){byType[d.type]=(byType[d.type]||0)+1;});
+  var byStatus={};DATA.forEach(function(d){byStatus[d.status]=(byStatus[d.status]||0)+1;});
+  var byRegion={};DATA.forEach(function(d){var r=d.region||'Other';byRegion[r]=(byRegion[r]||0)+1;});
+  return {cols:cols,rows:rows,count:active.length,metrics:{total:totalPartners,byType:byType,byStatus:byStatus,byRegion:byRegion}};
 }
 
 function loadScript(src){
@@ -626,9 +631,18 @@ function exportPDF(){
     if(YUNO_LOGO_B64){try{doc.addImage('data:image/png;base64,'+YUNO_LOGO_B64,'PNG',12,6,28,28);}catch(e){console.log('Logo skip:',e);}}
     doc.setFontSize(16);doc.setTextColor(28,20,51);doc.text('Partner Portfolio',12,40);
     doc.setFontSize(9);doc.setTextColor(100,116,139);doc.text('Generated on '+new Date().toLocaleDateString('en-US',{year:'numeric',month:'long',day:'numeric'}),12,47);
+    // Key metrics summary
+    var m=d.metrics;
+    var metricY=54;
+    doc.setFontSize(8);doc.setTextColor(62,79,224);doc.text('KEY METRICS',12,metricY);
+    doc.setFontSize(8);doc.setTextColor(28,20,51);
+    var typeStr=Object.keys(m.byType).map(function(k){return k+': '+m.byType[k];}).join('  |  ');
+    var statusStr=Object.keys(m.byStatus).map(function(k){return k+': '+m.byStatus[k];}).join('  |  ');
+    doc.text('Total Partners: '+m.total+'     '+typeStr,12,metricY+5);
+    doc.text('By Status: '+statusStr,12,metricY+10);
     // Sanitize text
     var cleanRows=d.rows.map(function(r){return r.map(function(v){return (v||'').replace(/[\u2014\u2013]/g,'-').replace(/[\u2018\u2019]/g,"'").replace(/[\u201c\u201d]/g,'"');});});
-    doc.autoTable({head:[d.cols],body:cleanRows,startY:52,
+    doc.autoTable({head:[d.cols],body:cleanRows,startY:metricY+16,
       styles:{fontSize:7,cellPadding:2,fillColor:[255,255,255],textColor:[28,20,51]},
       headStyles:{fillColor:[62,79,224],textColor:[255,255,255],fontStyle:'bold',fontSize:7},
       alternateRowStyles:{fillColor:[248,250,252]},
@@ -666,11 +680,34 @@ function exportExcel(){
   .then(function(){
     var wb=new ExcelJS.Workbook();
     wb.creator='Yuno Partner Portal';
-    var ws=wb.addWorksheet('Partner Portfolio',{views:[{showGridLines:false}]});
-    var d=getExportRows();
-    var nc=Math.max(d.count,3);
+    // Always include Partner Name even if toggled off
+    var exportCols=[];var exportRows=[];
+    var nameIncluded=selectedCols['name'];
+    if(!nameIncluded){
+      exportCols.push('Partner Name');
+    }
+    ALL_COLS.forEach(function(c){if(selectedCols[c.key]||c.key==='name'){exportCols.push(c.label);}});
+    // Deduplicate if name was already selected
+    if(!nameIncluded){exportCols=exportCols.filter(function(v,i){return exportCols.indexOf(v)===i;});}
+    DATA.forEach(function(d){
+      var row=[];
+      if(!nameIncluded) row.push(d.name);
+      ALL_COLS.forEach(function(c){if(selectedCols[c.key]||c.key==='name'){row.push(c.get(d));}});
+      if(!nameIncluded) row=row.filter(function(v,i){return i===0||exportCols.indexOf(ALL_COLS.find(function(cc){return cc.get(d)===v;}))<i;});
+      // Simplified: just rebuild
+      row=exportCols.map(function(col){
+        var cc=ALL_COLS.find(function(c){return c.label===col;});
+        return cc?cc.get(d):'';
+      });
+      exportRows.push(row);
+    });
+    var nc=exportCols.length;
+    var m=getExportRows().metrics;
 
-    // Logo area
+    // ── Sheet 1: Partner Portfolio ──
+    var ws=wb.addWorksheet('Partner Portfolio',{views:[{showGridLines:false}]});
+
+    // Logo
     ws.mergeCells(1,1,4,nc);
     ws.getRow(1).height=60;
     if(YUNO_LOGO_B64){
@@ -679,39 +716,63 @@ function exportExcel(){
     }
     // Title
     ws.mergeCells(5,1,5,nc);
-    var titleCell=ws.getCell('A5');
-    titleCell.value='Yuno - Partner Portfolio';
-    titleCell.font={name:'Arial',size:18,bold:true,color:{argb:'FF282A30'}};
-    titleCell.alignment={horizontal:'left',vertical:'middle'};
+    ws.getCell('A5').value='Yuno - Partner Portfolio';
+    ws.getCell('A5').font={name:'Arial',size:18,bold:true,color:{argb:'FF282A30'}};
+    ws.getCell('A5').alignment={horizontal:'left',vertical:'middle'};
     ws.getRow(5).height=30;
     // Date
     ws.mergeCells(6,1,6,nc);
-    var dateCell=ws.getCell('A6');
-    dateCell.value='Generated on '+new Date().toLocaleDateString('en-US',{year:'numeric',month:'long',day:'numeric'});
-    dateCell.font={name:'Arial',size:10,color:{argb:'FF94A3B8'}};
-    dateCell.alignment={horizontal:'left',vertical:'middle'};
+    ws.getCell('A6').value='Generated on '+new Date().toLocaleDateString('en-US',{year:'numeric',month:'long',day:'numeric'});
+    ws.getCell('A6').font={name:'Arial',size:10,color:{argb:'FF94A3B8'}};
     ws.getRow(6).height=18;
+
+    // Key Metrics section
+    var mr=7;
+    ws.getRow(mr).height=6; mr++;
+    ws.mergeCells(mr,1,mr,nc);
+    ws.getCell(mr,1).value='KEY METRICS';
+    ws.getCell(mr,1).font={name:'Arial',size:9,bold:true,color:{argb:'FF3E4FE0'}};
+    ws.getRow(mr).height=18; mr++;
+    // Total + By Type
+    var typeStr='Total Partners: '+m.total;
+    ws.mergeCells(mr,1,mr,nc);
+    ws.getCell(mr,1).value=typeStr;
+    ws.getCell(mr,1).font={name:'Arial',size:10,bold:true,color:{argb:'FF282A30'}};
+    ws.getRow(mr).height=20; mr++;
+    // Type breakdown
+    var typeDetail=Object.keys(m.byType).map(function(k){return k+': '+m.byType[k];}).join('   |   ');
+    ws.mergeCells(mr,1,mr,nc);
+    ws.getCell(mr,1).value='By Type:  '+typeDetail;
+    ws.getCell(mr,1).font={name:'Arial',size:9,color:{argb:'FF64748B'}};
+    ws.getRow(mr).height=18; mr++;
+    // Status breakdown
+    var statusDetail=Object.keys(m.byStatus).map(function(k){return k+': '+m.byStatus[k];}).join('   |   ');
+    ws.mergeCells(mr,1,mr,nc);
+    ws.getCell(mr,1).value='By Status:  '+statusDetail;
+    ws.getCell(mr,1).font={name:'Arial',size:9,color:{argb:'FF64748B'}};
+    ws.getRow(mr).height=18; mr++;
+    // Region breakdown
+    var regionDetail=Object.keys(m.byRegion).map(function(k){return k+': '+m.byRegion[k];}).join('   |   ');
+    ws.mergeCells(mr,1,mr,nc);
+    ws.getCell(mr,1).value='By Region:  '+regionDetail;
+    ws.getCell(mr,1).font={name:'Arial',size:9,color:{argb:'FF64748B'}};
+    ws.getRow(mr).height=18; mr++;
     // Spacer
-    ws.getRow(7).height=6;
+    ws.getRow(mr).height=6; mr++;
 
     // Header row
-    var hdrRowNum=8;
+    var hdrRowNum=mr;
     var hdrRow=ws.getRow(hdrRowNum);
     hdrRow.height=26;
-    d.cols.forEach(function(c,i){
+    exportCols.forEach(function(c,i){
       var cell=hdrRow.getCell(i+1);cell.value=c;
       cell.font={name:'Arial',size:10,bold:true,color:{argb:'FFFFFFFF'}};
       cell.fill={type:'pattern',pattern:'solid',fgColor:{argb:'FF3E4FE0'}};
       cell.alignment={horizontal:'center',vertical:'middle'};
-      cell.border={
-        top:{style:'thin',color:{argb:'FF3E4FE0'}},
-        bottom:{style:'thin',color:{argb:'FF3E4FE0'}},
-        left:{style:'thin',color:{argb:'FF3E4FE0'}},
-        right:{style:'thin',color:{argb:'FF3E4FE0'}}
-      };
+      cell.border={top:{style:'thin',color:{argb:'FF3E4FE0'}},bottom:{style:'thin',color:{argb:'FF3E4FE0'}},left:{style:'thin',color:{argb:'FF3E4FE0'}},right:{style:'thin',color:{argb:'FF3E4FE0'}}};
     });
-    // Data rows
-    d.rows.forEach(function(r,ri){
+    // Data rows (editable — no cell protection)
+    exportRows.forEach(function(r,ri){
       var row=ws.getRow(hdrRowNum+1+ri);
       row.height=22;
       var bgColor=ri%2===0?'FFFFFFFF':'FFF8FAFC';
@@ -720,29 +781,25 @@ function exportExcel(){
         cell.font={name:'Arial',size:9,color:{argb:'FF282A30'}};
         cell.alignment={vertical:'middle',wrapText:true};
         cell.fill={type:'pattern',pattern:'solid',fgColor:{argb:bgColor}};
-        cell.border={
-          bottom:{style:'hair',color:{argb:'FFE2E8F0'}},
-          left:{style:'hair',color:{argb:'FFE2E8F0'}},
-          right:{style:'hair',color:{argb:'FFE2E8F0'}}
-        };
+        cell.border={bottom:{style:'hair',color:{argb:'FFE2E8F0'}},left:{style:'hair',color:{argb:'FFE2E8F0'}},right:{style:'hair',color:{argb:'FFE2E8F0'}}};
       });
     });
     // Confidential footer
-    var footerRow=hdrRowNum+1+d.rows.length+1;
+    var footerRow=hdrRowNum+1+exportRows.length+1;
     ws.mergeCells(footerRow,1,footerRow,nc);
-    var footerCell=ws.getCell(footerRow,1);
-    footerCell.value='Confidential Yuno x Mastercard';
-    footerCell.font={name:'Arial',size:8,italic:true,color:{argb:'FF94A3B8'}};
-    footerCell.alignment={horizontal:'center',vertical:'middle'};
+    ws.getCell(footerRow,1).value='Confidential Yuno x Mastercard';
+    ws.getCell(footerRow,1).font={name:'Arial',size:8,italic:true,color:{argb:'FF94A3B8'}};
+    ws.getCell(footerRow,1).alignment={horizontal:'center',vertical:'middle'};
     ws.getRow(footerRow).height=20;
-
-    // Column widths — first col wider for names
-    d.cols.forEach(function(c,i){
+    // Column widths
+    exportCols.forEach(function(c,i){
       var maxLen=c.length;
-      d.rows.forEach(function(r){if(r[i]&&r[i].length>maxLen) maxLen=r[i].length;});
-      ws.getColumn(i+1).width=i===0?Math.min(maxLen+6,40):Math.min(Math.max(maxLen+4,14),28);
+      exportRows.forEach(function(r){if(r[i]&&r[i].length>maxLen) maxLen=r[i].length;});
+      ws.getColumn(i+1).width=c==='Name'||c==='Partner Name'?35:Math.min(Math.max(maxLen+4,14),28);
     });
-    // Print setup
+    // Auto-filter on header row for easy sorting/filtering in Excel
+    ws.autoFilter={from:{row:hdrRowNum,column:1},to:{row:hdrRowNum+exportRows.length,column:nc}};
+    // Print
     ws.pageSetup={orientation:'landscape',fitToPage:true,fitToWidth:1};
     ws.headerFooter={oddFooter:'Confidential Yuno x Mastercard'};
 
