@@ -1360,13 +1360,39 @@ def show_partners():
         else:
             st.session_state.selected_partner = None
 
-    # ── Build connector data for HTML component ─────────────────────────────
+    # ── Build connector data for HTML component (cached) ────────────────────
+    _connector_data, total, sot_live_ct, countries_ct = _build_connector_data()
+
+    import json as _json
+    _data_json = _json.dumps(_connector_data).replace("'","\\'").replace("</","<\\/")
+
+    # Read the HTML template and inject data
+    _html_file = _os.path.join(_BASE, "yuno_connectors.html")
+    with open(_html_file, "r") as _f:
+        _html_content = _f.read()
+
+    # Replace the hardcoded DATA array with our dynamic data
+    _html_content = _html_content.replace(
+        "var DATA = [",
+        f"var DATA = {_data_json}; var _ORIGINAL_DATA = ["
+    )
+    # Update stat numbers
+    _html_content = _html_content.replace(">460<", f">{total}<")
+    _html_content = _html_content.replace(">97<", f">{sot_live_ct}<")
+    _html_content = _html_content.replace(">189<", f">{countries_ct}<")
+    _html_content = _html_content.replace("var YUNO_LOGO_B64='';", f"var YUNO_LOGO_B64='{_LOGO_B64}';")
+
+    components.html(_html_content, height=2400, scrolling=True)
+    return
+
+
+@st.cache_data
+def _build_connector_data():
     total = len(PARTNERS_DATA)
     live_all = sum(1 for p in PARTNERS_DATA if p["status"] == "Live")
     countries_ct = len(set(p.get("country","") for p in PARTNERS_DATA if p.get("country","") and p.get("country","") != "nan"))
     sot_live_ct = len(_SOT_DF[_SOT_DF["Live/NonLive Partner/Contract signed"] == "Live"]["PROVIDER_NAME"].unique()) if len(_SOT_DF) > 0 else live_all
 
-    # Build JSON data for the HTML component
     import json as _json
     _connector_data = []
     for p in PARTNERS_DATA:
@@ -1432,26 +1458,7 @@ def show_partners():
             "nda": bool(p.get("nda")),
             "revshare": enrich["revshare"] if enrich else ("Yes" if p.get("revshare") else "No"),
         })
-    _data_json = _json.dumps(_connector_data).replace("'","\\'").replace("</","<\\/")
-
-    # Read the HTML template and inject data
-    _html_file = _os.path.join(_BASE, "yuno_connectors.html")
-    with open(_html_file, "r") as _f:
-        _html_content = _f.read()
-
-    # Replace the hardcoded DATA array with our dynamic data
-    _html_content = _html_content.replace(
-        "var DATA = [",
-        f"var DATA = {_data_json}; var _ORIGINAL_DATA = ["
-    )
-    # Update stat numbers
-    _html_content = _html_content.replace(">460<", f">{total}<")
-    _html_content = _html_content.replace(">97<", f">{sot_live_ct}<")
-    _html_content = _html_content.replace(">189<", f">{countries_ct}<")
-    _html_content = _html_content.replace("var YUNO_LOGO_B64='';", f"var YUNO_LOGO_B64='{_LOGO_B64}';")
-
-    components.html(_html_content, height=2400, scrolling=True)
-    return  # HTML component handles everything — skip old Python rendering
+    return _connector_data, total, sot_live_ct, countries_ct
 
     # ── OLD CODE (kept for reference, never executes) ─────────────────────────
     st.markdown(f"""
