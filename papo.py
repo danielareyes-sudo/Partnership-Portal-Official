@@ -1250,7 +1250,7 @@ def _export_pdf(df):
     pdf.set_y(-20)
     pdf.set_font("Helvetica", "", 7)
     pdf.set_text_color(148, 163, 184)
-    pdf.cell(0, 5, "Confidential - Yuno Partner Portal", align="C")
+    pdf.cell(0, 5, "Yuno x Mastercard Confidential", align="C")
     return bytes(pdf.output())
 
 
@@ -1377,6 +1377,23 @@ def show_partners():
     _html_content = _html_content.replace(">97<", f">{sot_live_ct}<")
     _html_content = _html_content.replace(">189<", f">{countries_ct}<")
     _html_content = _html_content.replace("var YUNO_LOGO_B64='';", f"var YUNO_LOGO_B64='{_LOGO_B64}';")
+
+    # Server-side export buttons (hidden, triggered by JS in iframe)
+    _partners_df = _build_partners_df()
+    _dl1, _dl2 = st.columns(2)
+    with _dl1:
+        st.download_button("Download PDF", data=_export_pdf(_partners_df),
+                           file_name="Yuno_Partner_Portfolio.pdf", mime="application/pdf", key="st_pdf_dl")
+    with _dl2:
+        st.download_button("Download Excel", data=_export_excel(_partners_df),
+                           file_name="Yuno_Partner_Portfolio.xlsx",
+                           mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", key="st_xlsx_dl")
+    st.markdown("""<style>
+    [data-testid="stMain"] div:has(> button[data-testid*="st_pdf_dl"]),
+    [data-testid="stMain"] div:has(> button[data-testid*="st_xlsx_dl"]) {
+        position:absolute !important;opacity:0 !important;height:1px !important;overflow:hidden !important;pointer-events:auto !important;
+    }
+    </style>""", unsafe_allow_html=True)
 
     components.html(_html_content, height=2400, scrolling=True)
     return
