@@ -1154,41 +1154,92 @@ def _export_excel(df):
     import io
     from openpyxl import Workbook
     from openpyxl.drawing.image import Image as XlImage
-    from openpyxl.styles import Font, PatternFill, Alignment
+    from openpyxl.styles import Font, PatternFill, Alignment, Border, Side
+    from openpyxl.utils import get_column_letter
     wb = Workbook()
     ws = wb.active
     ws.title = "Partner Portfolio"
-    # Logo
+    ws.sheet_view.showGridLines = False
+    nc = len(df.columns)
+    last_col = get_column_letter(nc)
+    thin_border = Side(style="hair", color="E2E8F0")
+    # Logo area — merged
+    ws.merge_cells(f"A1:{last_col}4")
+    ws.row_dimensions[1].height = 60
     logo_path = _os.path.join(_BASE, "Yuno logo.png")
     if _os.path.exists(logo_path):
         img = XlImage(logo_path)
-        img.width = 150
-        img.height = 150
+        img.width = 110
+        img.height = 110
         ws.add_image(img, "A1")
-    # Title below logo
-    ws["A9"] = "Yuno — Partner Portfolio Export"
-    ws["A9"].font = Font(name="Helvetica", size=14, bold=True, color="4F46E5")
-    ws["A10"] = f"Generated on {pd.Timestamp.now().strftime('%B %d, %Y')}"
-    ws["A10"].font = Font(name="Helvetica", size=10, color="6B7280")
+    # Title — merged
+    ws.merge_cells(f"A5:{last_col}5")
+    ws["A5"] = "Yuno - Partner Portfolio"
+    ws["A5"].font = Font(name="Arial", size=18, bold=True, color="282A30")
+    ws["A5"].alignment = Alignment(horizontal="left", vertical="center")
+    ws.row_dimensions[5].height = 30
+    # Date — merged
+    ws.merge_cells(f"A6:{last_col}6")
+    ws["A6"] = f"Generated on {pd.Timestamp.now().strftime('%B %d, %Y')}"
+    ws["A6"].font = Font(name="Arial", size=10, color="94A3B8")
+    ws["A6"].alignment = Alignment(horizontal="left", vertical="center")
+    ws.row_dimensions[6].height = 18
+    # Metrics — merged
+    ws.merge_cells(f"A7:{last_col}7")
+    total = len(df)
+    by_type = df["Category"].value_counts().to_dict() if "Category" in df.columns else {}
+    type_str = "   |   ".join(f"{k}: {v}" for k, v in by_type.items())
+    ws["A7"] = f"Total Partners: {total}     {type_str}"
+    ws["A7"].font = Font(name="Arial", size=9, color="64748B")
+    ws["A7"].alignment = Alignment(horizontal="left", vertical="center")
+    ws.row_dimensions[7].height = 18
+    # Spacer
+    ws.row_dimensions[8].height = 6
     # Header row
-    header_row = 12
-    header_fill = PatternFill(start_color="4F46E5", end_color="4F46E5", fill_type="solid")
-    header_font = Font(name="Helvetica", size=10, bold=True, color="FFFFFF")
+    hr = 9
+    header_fill = PatternFill(start_color="3E4FE0", end_color="3E4FE0", fill_type="solid")
+    header_font = Font(name="Arial", size=10, bold=True, color="FFFFFF")
+    header_border = Border(top=Side(style="thin", color="3E4FE0"), bottom=Side(style="thin", color="3E4FE0"),
+                           left=Side(style="thin", color="3E4FE0"), right=Side(style="thin", color="3E4FE0"))
     for c_idx, col in enumerate(df.columns, 1):
-        cell = ws.cell(row=header_row, column=c_idx, value=col)
+        cell = ws.cell(row=hr, column=c_idx, value=col)
         cell.fill = header_fill
         cell.font = header_font
-        cell.alignment = Alignment(horizontal="center")
+        cell.alignment = Alignment(horizontal="center", vertical="center")
+        cell.border = header_border
+    ws.row_dimensions[hr].height = 26
     # Data rows
-    data_font = Font(name="Helvetica", size=9, color="1C1433")
-    for r_idx, row in enumerate(df.itertuples(index=False), header_row + 1):
+    alt_fill = PatternFill(start_color="F8FAFC", end_color="F8FAFC", fill_type="solid")
+    data_font = Font(name="Arial", size=9, color="282A30")
+    data_border = Border(bottom=thin_border, left=thin_border, right=thin_border)
+    for r_idx, row in enumerate(df.itertuples(index=False)):
+        rn = hr + 1 + r_idx
         for c_idx, val in enumerate(row, 1):
-            cell = ws.cell(row=r_idx, column=c_idx, value=val)
+            cell = ws.cell(row=rn, column=c_idx, value=val)
             cell.font = data_font
-    # Auto-width columns
+            cell.alignment = Alignment(vertical="center")
+            cell.border = data_border
+            if r_idx % 2 == 1:
+                cell.fill = alt_fill
+        ws.row_dimensions[rn].height = 22
+    # Footer — merged
+    fr = hr + 1 + len(df) + 1
+    ws.merge_cells(f"A{fr}:{last_col}{fr}")
+    ws[f"A{fr}"] = "Yuno x Mastercard Confidential"
+    ws[f"A{fr}"].font = Font(name="Arial", size=10, bold=True, italic=True, color="3E4FE0")
+    ws[f"A{fr}"].alignment = Alignment(horizontal="center", vertical="center")
+    ws[f"A{fr}"].fill = PatternFill(start_color="F0F1FE", end_color="F0F1FE", fill_type="solid")
+    ws[f"A{fr}"].border = Border(top=Side(style="thin", color="3E4FE0"), bottom=Side(style="thin", color="3E4FE0"))
+    ws.row_dimensions[fr].height = 28
+    # Column widths
     for c_idx, col in enumerate(df.columns, 1):
         max_len = max(len(str(col)), df[col].astype(str).str.len().max())
-        ws.column_dimensions[ws.cell(row=header_row, column=c_idx).column_letter].width = min(max_len + 4, 30)
+        ws.column_dimensions[get_column_letter(c_idx)].width = 35 if c_idx == 1 else min(max_len + 5, 28)
+    # Auto-filter
+    ws.auto_filter.ref = f"A{hr}:{last_col}{hr + len(df)}"
+    ws.page_setup.orientation = "landscape"
+    ws.page_setup.fitToPage = True
+    ws.page_setup.fitToWidth = 1
     buf = io.BytesIO()
     wb.save(buf)
     return buf.getvalue()
