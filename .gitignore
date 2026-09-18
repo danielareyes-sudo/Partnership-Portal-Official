@@ -18,20 +18,24 @@ Backup*
 landing_component/
 
 # SSO client secrets
+src/.streamlit/secrets.toml
 .streamlit/secrets.toml
 
 # Local alert queue for unrecognised providers
-data/unrecognised_providers.jsonl
+src/data/unrecognised_providers.jsonl
 
 # Local alert log — written when Slack is unconfigured
-data/lead_alerts.jsonl
+src/data/lead_alerts.jsonl
 
 # Weekly tier snapshots — local review log
-data/tier_snapshots.jsonl
-data/partner_submissions.jsonl
-data/gtm_uploads/
-data/gtm_library.jsonl
-data/gtm_comments.jsonl
-data/gtm_events.jsonl
-data/gtm_enablement.jsonl
-data/contact_matrix/
+src/data/tier_snapshots.jsonl
+src/data/partner_submissions.jsonl
+src/data/gtm_uploads/
+src/data/gtm_library.jsonl
+src/data/gtm_comments.jsonl
+src/data/gtm_events.jsonl
+src/data/gtm_enablement.jsonl
+src/data/contact_matrix/
+
+# local env
+.env
