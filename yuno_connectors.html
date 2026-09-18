@@ -4,13 +4,13 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Yuno Connectors</title>
-<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Geist:wght@300;400;500;600;700&family=Geist+Mono:wght@400;500;600&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.2/jspdf.umd.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.4/jspdf.plugin.autotable.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/exceljs@4.4.0/dist/exceljs.min.js"></script>
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
-:root{--ink:#0A0F1E;--ink2:#111827;--slate:#334155;--muted:#64748B;--ghost:#94A3B8;--line:#E2E8F0;--bg:#F8FAFC;--white:#FFF;--indigo:#5B5FDE;--indigo2:#4F46E5;--blue:#3B82F6;--green:#10B981;--amber:#F59E0B;--red:#EF4444;--purple:#8B5CF6;--font:'DM Sans',system-ui,sans-serif;--mono:'DM Mono',monospace;}
+:root{--ink:#080911;--ink2:#10131C;--slate:#3A4155;--muted:#676E8A;--ghost:#858CA6;--line:#E2E6F4;--bg:#F7F8FD;--white:#FFF;--indigo:#3E4FE0;--indigo2:#3E4FE0;--blue:#5A6486;--green:#5A6B00;--amber:#8A6A00;--red:#C4384A;--purple:#3E4FE0;--font:'Geist','GeistSans',system-ui,sans-serif;--mono:'Geist Mono','GeistMono',ui-monospace,monospace;}
 html,body{min-height:100vh;font-family:var(--font);background:var(--bg);color:var(--ink);}
 
 /* LAYOUT */
@@ -19,14 +19,14 @@ html,body{min-height:100vh;font-family:var(--font);background:var(--bg);color:va
 /* HERO */
 .hero{background:var(--ink);border-radius:16px;padding:28px 32px;margin-bottom:20px;position:relative;overflow:hidden;}
 .hero::before{content:'';position:absolute;inset:0;background-image:radial-gradient(circle at 1px 1px,rgba(255,255,255,0.03) 1px,transparent 0);background-size:22px 22px;pointer-events:none;}
-.hero-glow{position:absolute;width:300px;height:300px;top:-60px;right:40px;border-radius:50%;background:radial-gradient(circle,rgba(91,95,222,0.12),transparent 65%);pointer-events:none;}
-.hero h1{font-size:26px;font-weight:800;color:#F1F5F9;letter-spacing:-0.03em;margin-bottom:4px;position:relative;z-index:1;}
+.hero-glow{position:absolute;width:300px;height:300px;top:-60px;right:40px;border-radius:50%;background:radial-gradient(circle,rgba(84,104,245,0.12),transparent 65%);pointer-events:none;}
+.hero h1{font-size:22px;font-weight:700;color:#F1F3FB;letter-spacing:-0.03em;margin-bottom:4px;position:relative;z-index:1;}
 .hero p{font-size:13px;color:var(--muted);position:relative;z-index:1;}
 
 /* STATS */
 .stats{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:20px;}
 .stat{background:var(--white);border:1px solid var(--line);border-radius:14px;padding:20px;text-align:center;}
-.stat-val{font-size:28px;font-weight:800;letter-spacing:-1px;}
+.stat-val{font-size:22px;font-weight:700;letter-spacing:-1px;}
 .stat-lbl{font-size:11px;color:var(--ghost);font-weight:600;text-transform:uppercase;letter-spacing:0.05em;margin-top:4px;}
 
 /* SEARCH */
@@ -36,13 +36,13 @@ html,body{min-height:100vh;font-family:var(--font);background:var(--bg);color:va
 .search-box{position:relative;}
 .search-input{width:100%;padding:13px 16px 13px 40px;background:var(--white);border:1px solid var(--line);border-radius:10px;font-size:13px;font-family:var(--font);color:var(--ink);outline:none;transition:border-color 0.15s,box-shadow 0.15s;box-sizing:border-box;}
 .search-input::placeholder{color:#B0B8C4;font-weight:400;}
-.search-input:focus{border-color:var(--indigo);box-shadow:0 0 0 3px rgba(91,95,222,0.08);}
+.search-input:focus{border-color:var(--indigo);box-shadow:0 0 0 3px rgba(84,104,245,0.08);}
 .search-icon{position:absolute;left:14px;top:50%;transform:translateY(-50%);pointer-events:none;color:#B0B8C4;}
 
 /* QUICK SEARCH */
 .qs{display:flex;flex-wrap:wrap;gap:5px;margin:8px 0 0;}
 .qs span{font-size:10px;font-weight:500;color:var(--ghost);padding:5px 12px;border:0.5px solid var(--line);border-radius:7px;background:var(--bg);cursor:pointer;transition:all 0.12s;}
-.qs span:hover{color:var(--indigo);border-color:#A5B4FC;background:#EEF2FF;}
+.qs span:hover{color:var(--indigo);border-color:#8B9BFF;background:#E9ECFC;}
 
 /* TOOLBAR */
 .toolbar{background:var(--white);border:0.5px solid var(--line);border-radius:12px;padding:12px 16px;margin-bottom:12px;display:flex;flex-direction:column;gap:10px;}
@@ -61,7 +61,7 @@ html,body{min-height:100vh;font-family:var(--font);background:var(--bg);color:va
 .f-multi-label.active{border-color:var(--indigo);color:var(--indigo);font-weight:600;background:#FAFAFF;}
 .f-multi-menu{display:none;position:absolute;top:calc(100% + 4px);left:0;background:#fff;border:1px solid var(--line);border-radius:8px;box-shadow:0 8px 24px rgba(0,0,0,0.1);z-index:50;min-width:180px;padding:4px 0;animation:dlFade 0.12s ease;}
 .f-multi-item{padding:7px 14px;font-size:11px;font-weight:500;cursor:pointer;color:var(--ink);display:flex;align-items:center;gap:8px;transition:background 0.1s;user-select:none;}
-.f-multi-item:hover{background:#F8FAFC;}
+.f-multi-item:hover{background:#F7F8FD;}
 .f-multi-check{width:16px;height:16px;border-radius:4px;border:1.5px solid var(--line);display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;flex-shrink:0;transition:all 0.12s;}
 .f-multi-check.on{background:var(--indigo);border-color:var(--indigo);color:#fff;}
 .dl-wrap{position:relative;}
@@ -69,54 +69,54 @@ html,body{min-height:100vh;font-family:var(--font);background:var(--bg);color:va
 .col-btn:hover{border-color:var(--indigo);color:var(--indigo);}
 .col-menu{display:none;position:absolute;right:0;top:calc(100% + 4px);background:#fff;border:1px solid var(--line);border-radius:8px;box-shadow:0 8px 24px rgba(0,0,0,0.1);z-index:50;min-width:170px;overflow:hidden;animation:dlFade 0.12s ease;padding:4px 0;}
 .col-row{padding:8px 16px;font-size:12px;font-weight:500;cursor:pointer;color:var(--ink);display:flex;align-items:center;gap:10px;transition:background 0.1s;user-select:none;}
-.col-row:hover{background:#F8FAFC;}
+.col-row:hover{background:#F7F8FD;}
 .col-eye{width:18px;height:18px;border-radius:4px;border:1px solid var(--line);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex-shrink:0;transition:all 0.12s;}
 .col-eye.on{background:var(--indigo);border-color:var(--indigo);color:#fff;}
-.col-eye.off{background:#F8FAFC;border-color:#D1D5DB;color:#D1D5DB;}
-.dl-btn{background:var(--ink);color:#A5B4FC;border:none;border-radius:8px;padding:7px 14px;font-size:11px;font-weight:600;cursor:pointer;font-family:var(--font);display:flex;align-items:center;gap:5px;transition:all 0.12s;white-space:nowrap;}
+.col-eye.off{background:#F7F8FD;border-color:#D2D7EA;color:#D2D7EA;}
+.dl-btn{background:var(--ink);color:#8B9BFF;border:none;border-radius:8px;padding:7px 14px;font-size:11px;font-weight:600;cursor:pointer;font-family:var(--font);display:flex;align-items:center;gap:5px;transition:all 0.12s;white-space:nowrap;}
 .dl-btn:hover{background:#1a2236;}
 .dl-menu{display:none;position:absolute;right:0;top:calc(100% + 4px);background:#fff;border:1px solid var(--line);border-radius:8px;box-shadow:0 8px 24px rgba(0,0,0,0.1);z-index:50;min-width:140px;overflow:hidden;animation:dlFade 0.12s ease;}
 @keyframes dlFade{from{opacity:0;transform:translateY(-3px);}to{opacity:1;transform:translateY(0);}}
 .dl-item{padding:9px 16px;font-size:11px;font-weight:600;cursor:pointer;color:var(--ink);border-bottom:1px solid #F5F5F5;transition:background 0.1s;}
 .dl-item:last-child{border-bottom:none;}
-.dl-item:hover{background:#F8FAFC;}
+.dl-item:hover{background:#F7F8FD;}
 
 /* TABLE */
 .tbl-card{background:var(--white);border:0.5px solid var(--line);border-radius:12px;overflow:hidden;}
 .tbl-count{font-size:13px;margin-bottom:8px;}.tbl-count b{font-weight:700;color:var(--ink);}
 table{width:100%;border-collapse:collapse;}
-th{padding:10px 14px;text-align:left;font-size:10px;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:var(--ghost);border-bottom:1px solid var(--line);background:#FAFAFA;}
-td{padding:12px 14px;font-size:13px;border-bottom:0.5px solid #F1F5F9;vertical-align:middle;}
+th{padding:10px 14px;text-align:left;font-size:10px;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:var(--ghost);border-bottom:1px solid var(--line);background:#F7F8FD;}
+td{padding:12px 14px;font-size:13px;border-bottom:0.5px solid #F1F3FB;vertical-align:middle;}
 tr.row{cursor:pointer;transition:background 0.1s;}
-tr.row:hover{background:#F8FAFC;}
+tr.row:hover{background:#F7F8FD;}
 tr.row.active{background:#FAFBFF;border-left:3px solid var(--indigo);}
 .td-name{font-weight:700;color:var(--ink);}
 
 /* TAGS */
 .tag{font-size:10px;font-weight:700;padding:2px 8px;border-radius:6px;display:inline-block;white-space:nowrap;}
-.t-green{background:#DCFCE7;color:#065F46}.t-blue{background:#DBEAFE;color:#1D4ED8}.t-amber{background:#FEF3C7;color:#B45309}
-.t-red{background:#FEE2E2;color:#DC2626}.t-gray{background:#F1F5F9;color:#475569}.t-purple{background:#F3E8FF;color:#6D28D9}
+.t-green{background:#F0F5DC;color:#46520A}.t-blue{background:#DFE3F2;color:#464F6E}.t-amber{background:#FAF0D0;color:#6E5400}
+.t-red{background:#FAE2E5;color:#C4384A}.t-gray{background:#F1F3FB;color:#4A5170}.t-purple{background:#F3E8FF;color:#6D28D9}
 
 /* DETAIL PANEL */
 tr.detail-row{display:none;}
 tr.detail-row.open{display:table-row;}
-.detail{background:#FAFBFF;padding:24px 28px;border-top:1px solid #E0E7FF;}
+.detail{background:#FAFBFF;padding:24px 28px;border-top:1px solid #D6DCFA;}
 .detail-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px;}
-.detail-section{background:var(--white);border:1px solid #EEF2F7;border-radius:10px;padding:16px 18px;}
+.detail-section{background:var(--white);border:1px solid #F1F3FB;border-radius:10px;padding:16px 18px;}
 .ds-title{font-size:10px;font-weight:700;color:var(--indigo);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:10px;display:flex;align-items:center;gap:6px;}
 .ds-title svg{width:14px;height:14px;stroke:var(--indigo);fill:none;stroke-width:1.5;stroke-linecap:round;}
 .ds-row{margin-bottom:8px;}
-.ds-label{font-size:9px;color:var(--ghost);text-transform:uppercase;letter-spacing:0.05em;}
+.ds-label{font-size:10px;color:var(--ghost);text-transform:uppercase;letter-spacing:0.05em;}
 .ds-value{font-size:12px;font-weight:600;color:var(--ink);margin-top:1px;}
-.ds-value.green{color:#065F46;}.ds-value.mono{font-family:var(--mono);}
+.ds-value.green{color:#46520A;}.ds-value.mono{font-family:var(--font);font-variant-numeric:tabular-nums;}
 .chip{font-size:10px;font-weight:600;padding:3px 10px;border-radius:6px;display:inline-block;margin:2px;}
-.chip-pm{background:#EFF6FF;color:#1D4ED8;border:0.5px solid #BFDBFE;}
-.chip-vert{background:#F1F5F9;color:#334155;}
-.chip-cur{background:#ECFDF5;color:#065F46;border:0.5px solid #A7F3D0;}
+.chip-pm{background:#EFF1F9;color:#464F6E;border:0.5px solid #BFDBFE;}
+.chip-vert{background:#F1F3FB;color:#3A4155;}
+.chip-cur{background:#F4F8E4;color:#46520A;border:0.5px solid #A7F3D0;}
 .check{display:flex;align-items:center;gap:6px;margin-bottom:6px;font-size:12px;}
-.check-on{width:16px;height:16px;border-radius:50%;background:#DCFCE7;display:flex;align-items:center;justify-content:center;font-size:10px;color:#065F46;}
-.check-off{width:16px;height:16px;border-radius:50%;background:#F1F5F9;display:flex;align-items:center;justify-content:center;font-size:10px;color:#CBD5E1;}
-.contact-card{display:flex;align-items:center;gap:10px;padding:8px 10px;background:#F8FAFC;border-radius:8px;margin-bottom:6px;}
+.check-on{width:16px;height:16px;border-radius:50%;background:#F0F5DC;display:flex;align-items:center;justify-content:center;font-size:10px;color:#46520A;}
+.check-off{width:16px;height:16px;border-radius:50%;background:#F1F3FB;display:flex;align-items:center;justify-content:center;font-size:10px;color:#D2D7EA;}
+.contact-card{display:flex;align-items:center;gap:10px;padding:8px 10px;background:#F7F8FD;border-radius:8px;margin-bottom:6px;}
 .contact-av{width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;color:#fff;flex-shrink:0;}
 </style>
 </head>
@@ -132,36 +132,22 @@ tr.detail-row.open{display:table-row;}
 
 <!-- STATS -->
 <div class="stats">
-  <div class="stat"><div class="stat-val" style="color:#5B5FDE">460</div><div class="stat-lbl">Total Connectors</div></div>
-  <div class="stat"><div class="stat-val" style="color:#10B981">97</div><div class="stat-lbl">Live & Active</div></div>
-  <div class="stat"><div class="stat-val" style="color:#3B82F6">189</div><div class="stat-lbl">Countries</div></div>
-  <div class="stat"><div class="stat-val" style="color:#F59E0B">89.4%</div><div class="stat-lbl">Avg Approval Rate</div></div>
+  <div class="stat"><div class="stat-val" style="color:#3E4FE0">460</div><div class="stat-lbl">Total Connectors</div></div>
+  <div class="stat"><div class="stat-val" style="color:#5A6B00">97</div><div class="stat-lbl">Live & Active</div></div>
+  <div class="stat"><div class="stat-val" style="color:#5A6486">189</div><div class="stat-lbl">Countries</div></div>
+  <div class="stat"><div class="stat-val" style="color:#8A6A00">89.4%</div><div class="stat-lbl">Avg Approval Rate</div></div>
 </div>
 
-<!-- SEARCH -->
-<div class="search-wrap">
-  <div class="search-box">
-    <svg class="search-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-    <input class="search-input" id="search" placeholder="Ask anything — contacts, features, pricing, settlement, regions..." oninput="filterTable()">
-  </div>
-  <div class="qs" id="qs">
-    <span onclick="setSearch('contact for Adyen')">Contact for Adyen</span>
-    <span onclick="setSearch('acquirers in brazil')">Acquirers in Brazil</span>
-    <span onclick="setSearch('which connectors accept gaming')">Gaming connectors</span>
-    <span onclick="setSearch('connectors with tokenization in LATAM')">Tokenization in LATAM</span>
-    <span onclick="setSearch('who supports recurring payments')">Recurring payments</span>
-    <span onclick="setSearch('connectors with payouts')">Payouts support</span>
-    <span onclick="setSearch('live connectors in APAC')">Live in APAC</span>
-    <span onclick="setSearch('settlement t+1')">T+1 settlement</span>
-  </div>
-</div>
+<!-- SEARCH lives in the portal's AI box above this table; the hidden input keeps
+     filterTable()/setSearch() working for the toolbar filters. -->
+<input type="hidden" id="search" value="">
 
 <!-- TOOLBAR -->
 <div class="toolbar">
   <div class="tb-top">
     <div class="tb-left">
       <div class="tb-filters">
-        <select class="f-select" id="f-type" onchange="onFilterChange()"><option value="">Type</option><option>PSP</option><option>Acquirer</option><option>APM</option><option>Fraud</option><option>BaaS</option></select>
+        <!-- Type filter replaced by the natural-language search above the component -->
         <select class="f-select" id="f-region" onchange="onFilterChange()"><option value="">Region</option><option>Global</option><option>LATAM</option><option>Brasil</option><option>EMEA</option><option>APAC</option><option>North America</option><option>Africa</option></select>
         <div class="f-multi" id="f-status-wrap">
           <div class="f-multi-label" onclick="document.getElementById('f-status-menu').style.display=document.getElementById('f-status-menu').style.display==='block'?'none':'block';">Status ▾</div>
@@ -207,7 +193,7 @@ tr.detail-row.open{display:table-row;}
 <script>
 var DATA = [
   {name:"Adyen",type:"Acquirer",region:"Global",country:"Global",status:"Live",
-   contacts:[{name:"Sarah Chen",role:"Commercial",email:"s.chen@adyen.com",phone:"+31 20 555 0101",color:"#3B82F6"},{name:"Marco Visser",role:"Technical",email:"m.visser@adyen.com",phone:"+31 20 555 0202",color:"#10B981"},{name:"Lisa Park",role:"Escalation",email:"l.park@adyen.com",phone:"+31 20 555 0303",color:"#EF4444"}],
+   contacts:[{name:"Sarah Chen",role:"Commercial",email:"s.chen@adyen.com",phone:"+31 20 555 0101",color:"#5A6486"},{name:"Marco Visser",role:"Technical",email:"m.visser@adyen.com",phone:"+31 20 555 0202",color:"#5A6B00"},{name:"Lisa Park",role:"Escalation",email:"l.park@adyen.com",phone:"+31 20 555 0303",color:"#C4384A"}],
    verticals:["E-commerce","Travel","Mobility","Streaming","Retail","Marketplaces"],
    currencies:["USD","EUR","BRL","MXN","COP","ARS","GBP","JPY","SGD"],
    auth:{type:"Full Auth + Pre-Auth",settlement:"T+1",settleCurrency:"Local + USD",chargebackWindow:"120 days"},
@@ -215,7 +201,7 @@ var DATA = [
    pricing:{standard:"0.95%",discount:"0.75%",discountWhen:"TPV > $50M/yr",mdr:"IC+ model",fx:"0.5% markup",minimums:"$5K/mo"},
    paymentMethods:["Visa","Mastercard","Amex","iDEAL","Bancontact","PIX","Boleto","OXXO","PSE"]},
   {name:"Cielo",type:"Acquirer",region:"Brasil",country:"Brasil",status:"Live",
-   contacts:[{name:"Ricardo Souza",role:"Commercial",email:"r.souza@cielo.com.br",phone:"+55 11 4002 5555",color:"#3B82F6"},{name:"Ana Costa",role:"Technical",email:"a.costa@cielo.com.br",phone:"+55 11 4002 5556",color:"#10B981"},{name:"Pedro Lima",role:"Escalation",email:"p.lima@cielo.com.br",phone:"+55 11 4002 5557",color:"#EF4444"}],
+   contacts:[{name:"Ricardo Souza",role:"Commercial",email:"r.souza@cielo.com.br",phone:"+55 11 4002 5555",color:"#5A6486"},{name:"Ana Costa",role:"Technical",email:"a.costa@cielo.com.br",phone:"+55 11 4002 5556",color:"#5A6B00"},{name:"Pedro Lima",role:"Escalation",email:"p.lima@cielo.com.br",phone:"+55 11 4002 5557",color:"#C4384A"}],
    verticals:["Retail","E-commerce","Food Delivery","Subscriptions"],
    currencies:["BRL","USD"],
    auth:{type:"Full Auth",settlement:"T+1",settleCurrency:"BRL",chargebackWindow:"90 days"},
@@ -223,7 +209,7 @@ var DATA = [
    pricing:{standard:"1.2%",discount:"0.85%",discountWhen:"Local entity + TPV > $10M/yr",mdr:"Blended",fx:"N/A (local)",minimums:"R$3K/mo"},
    paymentMethods:["Visa","Mastercard","Elo","Hipercard","PIX","Boleto"]},
   {name:"Stripe",type:"PSP",region:"Global",country:"Global",status:"Live",
-   contacts:[{name:"James Wilson",role:"Commercial",email:"j.wilson@stripe.com",phone:"+1 415 555 0101",color:"#3B82F6"},{name:"Emily Zhao",role:"Technical",email:"e.zhao@stripe.com",phone:"+1 415 555 0202",color:"#10B981"},{name:"David Kim",role:"Escalation",email:"d.kim@stripe.com",phone:"+1 415 555 0303",color:"#EF4444"}],
+   contacts:[{name:"James Wilson",role:"Commercial",email:"j.wilson@stripe.com",phone:"+1 415 555 0101",color:"#5A6486"},{name:"Emily Zhao",role:"Technical",email:"e.zhao@stripe.com",phone:"+1 415 555 0202",color:"#5A6B00"},{name:"David Kim",role:"Escalation",email:"d.kim@stripe.com",phone:"+1 415 555 0303",color:"#C4384A"}],
    verticals:["SaaS","Marketplaces","E-commerce","On-demand","Subscriptions"],
    currencies:["USD","EUR","GBP","MXN","BRL","JPY","AUD","CAD","SGD","HKD"],
    auth:{type:"Full Auth + Pre-Auth + Incremental",settlement:"T+2",settleCurrency:"USD / Local",chargebackWindow:"120 days"},
@@ -231,7 +217,7 @@ var DATA = [
    pricing:{standard:"2.9% + $0.30",discount:"2.2%",discountWhen:"TPV > $100M/yr",mdr:"Blended",fx:"1% markup",minimums:"None"},
    paymentMethods:["Visa","Mastercard","Amex","Apple Pay","Google Pay","SEPA","iDEAL","Bancontact"]},
   {name:"dLocal",type:"PSP",region:"LATAM",country:"Regional",status:"Live",
-   contacts:[{name:"Maria Gonzalez",role:"Commercial",email:"m.gonzalez@dlocal.com",phone:"+598 2 555 0101",color:"#3B82F6"},{name:"Carlos Mendez",role:"Technical",email:"c.mendez@dlocal.com",phone:"+598 2 555 0202",color:"#10B981"},{name:"Laura Reyes",role:"Escalation",email:"l.reyes@dlocal.com",phone:"+598 2 555 0303",color:"#EF4444"}],
+   contacts:[{name:"Maria Gonzalez",role:"Commercial",email:"m.gonzalez@dlocal.com",phone:"+598 2 555 0101",color:"#5A6486"},{name:"Carlos Mendez",role:"Technical",email:"c.mendez@dlocal.com",phone:"+598 2 555 0202",color:"#5A6B00"},{name:"Laura Reyes",role:"Escalation",email:"l.reyes@dlocal.com",phone:"+598 2 555 0303",color:"#C4384A"}],
    verticals:["Streaming","Gaming","SaaS","Marketplaces","Ride-hailing"],
    currencies:["USD","BRL","MXN","COP","ARS","CLP","PEN","UYU"],
    auth:{type:"Full Auth",settlement:"T+2 to T+5",settleCurrency:"USD",chargebackWindow:"90 days"},
@@ -239,7 +225,7 @@ var DATA = [
    pricing:{standard:"1.8%",discount:"1.4%",discountWhen:"Multi-country + TPV > $20M/yr",mdr:"Blended",fx:"1.5% markup",minimums:"$2K/mo"},
    paymentMethods:["Visa","Mastercard","PIX","Boleto","OXXO","PSE","Efecty","Khipu","Webpay"]},
   {name:"Kushki",type:"Acquirer",region:"LATAM",country:"Regional",status:"Live",
-   contacts:[{name:"Aron Schwarzkopf",role:"Commercial",email:"a.schwarz@kushki.com",phone:"+593 2 555 0101",color:"#3B82F6"},{name:"Diego Morales",role:"Technical",email:"d.morales@kushki.com",phone:"+593 2 555 0202",color:"#10B981"},{name:"Sofia Ruiz",role:"Escalation",email:"s.ruiz@kushki.com",phone:"+593 2 555 0303",color:"#EF4444"}],
+   contacts:[{name:"Aron Schwarzkopf",role:"Commercial",email:"a.schwarz@kushki.com",phone:"+593 2 555 0101",color:"#5A6486"},{name:"Diego Morales",role:"Technical",email:"d.morales@kushki.com",phone:"+593 2 555 0202",color:"#5A6B00"},{name:"Sofia Ruiz",role:"Escalation",email:"s.ruiz@kushki.com",phone:"+593 2 555 0303",color:"#C4384A"}],
    verticals:["E-commerce","Ride-hailing","Delivery","SaaS","Retail"],
    currencies:["USD","COP","MXN","PEN","CLP","BRL"],
    auth:{type:"Full Auth + Pre-Auth",settlement:"T+1",settleCurrency:"Local",chargebackWindow:"60 days"},
@@ -247,7 +233,7 @@ var DATA = [
    pricing:{standard:"1.6%",discount:"1.2%",discountWhen:"Multi-LATAM deal",mdr:"IC+",fx:"0.8% markup",minimums:"$1K/mo"},
    paymentMethods:["Visa","Mastercard","PSE","Nequi","OXXO","PagoEfectivo"]},
   {name:"SEON",type:"Fraud",region:"Global",country:"Global",status:"Live",
-   contacts:[{name:"Tamas Kadar",role:"Commercial",email:"t.kadar@seon.io",phone:"+36 1 555 0101",color:"#3B82F6"},{name:"Bence Nagy",role:"Technical",email:"b.nagy@seon.io",phone:"+36 1 555 0202",color:"#10B981"},{name:"Eva Kovacs",role:"Escalation",email:"e.kovacs@seon.io",phone:"+36 1 555 0303",color:"#EF4444"}],
+   contacts:[{name:"Tamas Kadar",role:"Commercial",email:"t.kadar@seon.io",phone:"+36 1 555 0101",color:"#5A6486"},{name:"Bence Nagy",role:"Technical",email:"b.nagy@seon.io",phone:"+36 1 555 0202",color:"#5A6B00"},{name:"Eva Kovacs",role:"Escalation",email:"e.kovacs@seon.io",phone:"+36 1 555 0303",color:"#C4384A"}],
    verticals:["Gaming","Crypto","Fintech","E-commerce","iGaming"],
    currencies:["N/A — Fraud screening"],
    auth:{type:"Pre-transaction screening",settlement:"N/A",settleCurrency:"N/A",chargebackWindow:"N/A"},
@@ -255,7 +241,7 @@ var DATA = [
    pricing:{standard:"$0.02/check",discount:"$0.01/check",discountWhen:"Volume > 1M checks/mo",mdr:"Per-query",fx:"N/A",minimums:"$500/mo"},
    paymentMethods:["Device fingerprinting","Email intelligence","Phone intelligence","IP scoring","Velocity checks"]},
   {name:"Nuvei",type:"PSP",region:"Global",country:"Global",status:"Agreement Signed",
-   contacts:[{name:"Philip Fayer",role:"Commercial",email:"p.fayer@nuvei.com",phone:"+1 514 555 0101",color:"#3B82F6"},{name:"Ronen Morecki",role:"Technical",email:"r.morecki@nuvei.com",phone:"+1 514 555 0202",color:"#10B981"},{name:"Lisa Chen",role:"Escalation",email:"l.chen@nuvei.com",phone:"+1 514 555 0303",color:"#EF4444"}],
+   contacts:[{name:"Philip Fayer",role:"Commercial",email:"p.fayer@nuvei.com",phone:"+1 514 555 0101",color:"#5A6486"},{name:"Ronen Morecki",role:"Technical",email:"r.morecki@nuvei.com",phone:"+1 514 555 0202",color:"#5A6B00"},{name:"Lisa Chen",role:"Escalation",email:"l.chen@nuvei.com",phone:"+1 514 555 0303",color:"#C4384A"}],
    verticals:["Gaming","Crypto","Forex","Travel","iGaming"],
    currencies:["USD","EUR","GBP","CAD","AUD","BRL","MXN","JPY"],
    auth:{type:"Full Auth + Pre-Auth + 3DS",settlement:"T+1 to T+3",settleCurrency:"USD / EUR / GBP",chargebackWindow:"120 days"},
@@ -263,7 +249,7 @@ var DATA = [
    pricing:{standard:"1.4%",discount:"1.0%",discountWhen:"High-risk vertical + volume",mdr:"IC+",fx:"1% markup",minimums:"$3K/mo"},
    paymentMethods:["Visa","Mastercard","Amex","Apple Pay","Google Pay","Bitcoin","Skrill","Neteller"]},
   {name:"MercadoPago",type:"APM",region:"LATAM",country:"Regional",status:"Live",
-   contacts:[{name:"Carlos Ruiz",role:"Commercial",email:"c.ruiz@mercadopago.com",phone:"+54 11 555 0101",color:"#3B82F6"},{name:"Lucia Fernandez",role:"Technical",email:"l.fernandez@mercadopago.com",phone:"+54 11 555 0202",color:"#10B981"},{name:"Martin Diaz",role:"Escalation",email:"m.diaz@mercadopago.com",phone:"+54 11 555 0303",color:"#EF4444"}],
+   contacts:[{name:"Carlos Ruiz",role:"Commercial",email:"c.ruiz@mercadopago.com",phone:"+54 11 555 0101",color:"#5A6486"},{name:"Lucia Fernandez",role:"Technical",email:"l.fernandez@mercadopago.com",phone:"+54 11 555 0202",color:"#5A6B00"},{name:"Martin Diaz",role:"Escalation",email:"m.diaz@mercadopago.com",phone:"+54 11 555 0303",color:"#C4384A"}],
    verticals:["E-commerce","Marketplaces","Retail","Delivery","Subscriptions"],
    currencies:["ARS","BRL","MXN","COP","CLP","UYU"],
    auth:{type:"Redirect-based",settlement:"T+1",settleCurrency:"Local",chargebackWindow:"45 days"},
@@ -271,7 +257,7 @@ var DATA = [
    pricing:{standard:"1.5%",discount:"1.1%",discountWhen:"TPV > $15M/yr",mdr:"Blended",fx:"N/A (local)",minimums:"None"},
    paymentMethods:["MercadoPago Wallet","QR Code","Installments","Debit","Credit"]},
   {name:"Checkout.com",type:"PSP",region:"Global",country:"Global",status:"Agreement Review",
-   contacts:[{name:"Guillaume Pousaz",role:"Commercial",email:"g.pousaz@checkout.com",phone:"+44 20 555 0101",color:"#3B82F6"},{name:"Tom Richards",role:"Technical",email:"t.richards@checkout.com",phone:"+44 20 555 0202",color:"#10B981"},{name:"Sarah Jones",role:"Escalation",email:"s.jones@checkout.com",phone:"+44 20 555 0303",color:"#EF4444"}],
+   contacts:[{name:"Guillaume Pousaz",role:"Commercial",email:"g.pousaz@checkout.com",phone:"+44 20 555 0101",color:"#5A6486"},{name:"Tom Richards",role:"Technical",email:"t.richards@checkout.com",phone:"+44 20 555 0202",color:"#5A6B00"},{name:"Sarah Jones",role:"Escalation",email:"s.jones@checkout.com",phone:"+44 20 555 0303",color:"#C4384A"}],
    verticals:["Travel","Gaming","Crypto","Forex","Marketplaces"],
    currencies:["USD","EUR","GBP","AED","SAR","BHD","KWD","QAR"],
    auth:{type:"Full Auth + Pre-Auth + Network Tokens",settlement:"T+1",settleCurrency:"USD / EUR / GBP / AED",chargebackWindow:"120 days"},
@@ -279,7 +265,7 @@ var DATA = [
    pricing:{standard:"1.1%",discount:"0.8%",discountWhen:"Enterprise deal + exclusivity",mdr:"IC+",fx:"0.6% markup",minimums:"$10K/mo"},
    paymentMethods:["Visa","Mastercard","Amex","Apple Pay","Google Pay","Mada","KNET","Fawry"]},
   {name:"Tap Payments",type:"PSP",region:"EMEA",country:"Regional",status:"Agreement Signed",
-   contacts:[{name:"Faisal Al-Saud",role:"Commercial",email:"f.alsaud@tap.company",phone:"+966 11 555 0101",color:"#3B82F6"},{name:"Ahmed Hassan",role:"Technical",email:"a.hassan@tap.company",phone:"+966 11 555 0202",color:"#10B981"},{name:"Noura Al-Rashid",role:"Escalation",email:"n.alrashid@tap.company",phone:"+966 11 555 0303",color:"#EF4444"}],
+   contacts:[{name:"Faisal Al-Saud",role:"Commercial",email:"f.alsaud@tap.company",phone:"+966 11 555 0101",color:"#5A6486"},{name:"Ahmed Hassan",role:"Technical",email:"a.hassan@tap.company",phone:"+966 11 555 0202",color:"#5A6B00"},{name:"Noura Al-Rashid",role:"Escalation",email:"n.alrashid@tap.company",phone:"+966 11 555 0303",color:"#C4384A"}],
    verticals:["E-commerce","Retail","Food Delivery","SaaS","Travel"],
    currencies:["SAR","AED","BHD","KWD","QAR","OMR","JOD","EGP","USD"],
    auth:{type:"Full Auth + 3DS2",settlement:"T+2",settleCurrency:"Local GCC",chargebackWindow:"90 days"},
@@ -295,8 +281,8 @@ var TYPE_CLS={"PSP":"t-blue","Acquirer":"t-blue","APM":"t-purple","Fraud":"t-red
 var TBL_COLS=[
   {key:'name',hdr:'Connector Name',cell:function(d){return '<td class="td-name">'+d.name+'</td>';}},
   {key:'type',hdr:'Type',cell:function(d){return '<td><span class="tag '+(TYPE_CLS[d.type]||'t-gray')+'">'+d.type+'</span></td>';}},
-  {key:'region',hdr:'Region',cell:function(d){return '<td style="color:#64748b">'+d.region+'</td>';}},
-  {key:'country',hdr:'Country',cell:function(d){return '<td style="color:#64748b">'+d.country+'</td>';}},
+  {key:'region',hdr:'Region',cell:function(d){return '<td style="color:#676E8A">'+d.region+'</td>';}},
+  {key:'country',hdr:'Country',cell:function(d){return '<td style="color:#676E8A">'+d.country+'</td>';}},
   {key:'status',hdr:'Status',cell:function(d){return '<td><span class="tag '+(STATUS_CLS[d.status]||'t-gray')+'">'+d.status+'</span></td>';}}
 ];
 
@@ -342,7 +328,7 @@ function buildDetail(d){
   var c=d.contacts||[];
   var contactsHTML=c.map(function(ct){
     var init=ct.name.split(' ').map(function(w){return w[0];}).join('');
-    return '<div class="contact-card"><div class="contact-av" style="background:'+ct.color+'">'+init+'</div><div><div class="ds-label">'+ct.role+'</div><div class="ds-value">'+ct.name+'</div><div style="font-size:11px;color:#64748b">'+ct.email+' · '+ct.phone+'</div></div></div>';
+    return '<div class="contact-card"><div class="contact-av" style="background:'+ct.color+'">'+init+'</div><div><div class="ds-label">'+ct.role+'</div><div class="ds-value">'+ct.name+'</div><div style="font-size:11px;color:#676E8A">'+ct.email+' · '+ct.phone+'</div></div></div>';
   }).join('');
   var vertsHTML=(d.verticals||[]).map(function(v){return '<span class="chip chip-vert">'+v+'</span>';}).join(' ');
   var cursHTML=(d.currencies||[]).map(function(c){return '<span class="chip chip-cur">'+c+'</span>';}).join(' ');
@@ -398,7 +384,7 @@ function filterTable(){
   var showAll=document.getElementById('show-all').checked;
   if(!showAll && !q && !ft && !fr && !activeStatuses.length && !fti){
     var _vc=TBL_COLS.filter(function(c){return selectedCols[c.key];}).length||5;
-    document.getElementById('tbody').innerHTML='<tr><td colspan="'+_vc+'" style="text-align:center;padding:40px;color:#94a3b8;font-size:13px;">Search above or check "Show all Yuno connectors" to browse the full list.</td></tr>';
+    document.getElementById('tbody').innerHTML='<tr><td colspan="'+_vc+'" style="text-align:center;padding:40px;color:#858CA6;font-size:13px;">Search above or check "Show all Yuno connectors" to browse the full list.</td></tr>';
     document.getElementById('tbl-count').innerHTML='';
     return;
   }
@@ -707,9 +693,9 @@ function exportPDF(){
   .catch(function(err){
     // Fallback: HTML file download (no window.open to avoid about:blank)
     console.log('jsPDF failed, using HTML fallback:',err);
-    var html='<!DOCTYPE html><html><head><title>Yuno Partner Portfolio</title><style>@page{margin:20mm;}body{font-family:Arial,sans-serif;margin:20px;color:#282A30;}table{width:100%;border-collapse:collapse;margin-top:20px;}th{background:#3E4FE0;color:#fff;padding:8px 10px;text-align:left;font-size:10px;font-weight:700;}td{padding:6px 10px;border-bottom:1px solid #E2E8F0;font-size:9px;}tr:nth-child(even){background:#f8fafc;}.footer{position:fixed;bottom:0;width:100%;text-align:center;font-size:8px;color:#94a3b8;padding:10px 0;}</style></head><body>';
+    var html='<!DOCTYPE html><html><head><title>Yuno Partner Portfolio</title><style>@page{margin:20mm;}body{font-family:Arial,sans-serif;margin:20px;color:#282A30;}table{width:100%;border-collapse:collapse;margin-top:20px;}th{background:#3E4FE0;color:#fff;padding:8px 10px;text-align:left;font-size:10px;font-weight:700;}td{padding:6px 10px;border-bottom:1px solid #E2E6F4;font-size:10px;}tr:nth-child(even){background:#F7F8FD;}.footer{position:fixed;bottom:0;width:100%;text-align:center;font-size:10px;color:#858CA6;padding:10px 0;}</style></head><body>';
     if(YUNO_LOGO_B64) html+='<img src="data:image/png;base64,'+YUNO_LOGO_B64+'" style="max-width:100px;margin-bottom:12px;">';
-    html+='<h2 style="margin:0 0 4px;">Partner Portfolio</h2><p style="color:#6b7280;font-size:11px;margin:0 0 16px;">Generated on '+new Date().toLocaleDateString('en-US',{year:'numeric',month:'long',day:'numeric'})+'</p>';
+    html+='<h2 style="margin:0 0 4px;">Partner Portfolio</h2><p style="color:#676E8A;font-size:11px;margin:0 0 16px;">Generated on '+new Date().toLocaleDateString('en-US',{year:'numeric',month:'long',day:'numeric'})+'</p>';
     html+='<table><thead><tr>'+d.cols.map(function(c){return '<th>'+c+'</th>';}).join('')+'</tr></thead><tbody>';
     d.rows.forEach(function(r){html+='<tr>'+r.map(function(v){return '<td>'+(v||'')+'</td>';}).join('')+'</tr>';});
     html+='</tbody></table><div class="footer">Yuno x Mastercard Confidential</div></body></html>';

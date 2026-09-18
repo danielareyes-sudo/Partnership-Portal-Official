@@ -16,3 +16,22 @@ Yuno × Adyen*
 Copy of*
 Backup*
 landing_component/
+
+# SSO client secrets
+.streamlit/secrets.toml
+
+# Local alert queue for unrecognised providers
+data/unrecognised_providers.jsonl
+
+# Local alert log — written when Slack is unconfigured
+data/lead_alerts.jsonl
+
+# Weekly tier snapshots — local review log
+data/tier_snapshots.jsonl
+data/partner_submissions.jsonl
+data/gtm_uploads/
+data/gtm_library.jsonl
+data/gtm_comments.jsonl
+data/gtm_events.jsonl
+data/gtm_enablement.jsonl
+data/contact_matrix/

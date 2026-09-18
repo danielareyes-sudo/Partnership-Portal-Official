@@ -3,6 +3,7 @@ headless = true
 
 [theme]
 base = "light"
+primaryColor = "#3E4FE0"
 
 [browser]
 gatherUsageStats = false

@@ -1,0 +1,277 @@
+<!doctype html>
+<meta charset="utf-8">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --void:#07080E; --panel:#10131C; --panel2:#141827; --line:#232A3D; --line2:#38415C;
+  --ink:#EEF0FA; --dim:#8991AC; --faint:#5C6480;
+  --font:'Geist','GeistSans',-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;
+}
+html,body{font-family:var(--font);background:transparent;color:var(--ink);font-size:13px;
+  -webkit-font-smoothing:antialiased}
+.wrap{position:relative;border-radius:16px;border:1px solid var(--line);overflow:hidden;
+  background:linear-gradient(168deg,#07080E 0%,#0E1119 55%,#121623 100%);padding:16px}
+.wrap::before{content:'';position:absolute;inset:0;pointer-events:none;
+  background-image:linear-gradient(rgba(139,155,255,.05) 1px,transparent 1px),
+                   linear-gradient(90deg,rgba(139,155,255,.05) 1px,transparent 1px);
+  background-size:34px 34px}
+.wrap::after{content:'';position:absolute;top:-130px;right:-90px;width:430px;height:430px;
+  border-radius:50%;pointer-events:none;
+  background:radial-gradient(circle,rgba(84,104,245,.17),transparent 66%)}
+.inner{position:relative;z-index:1}
+
+/* Desk */
+.desk{display:flex;gap:7px;flex-wrap:wrap;margin-bottom:12px}
+.seat{flex:1;min-width:104px;background:rgba(255,255,255,.035);border:1px solid rgba(255,255,255,.09);
+  border-radius:10px;padding:9px 11px;cursor:pointer;transition:.15s;border-left:3px solid transparent}
+.seat:hover{background:rgba(255,255,255,.08);border-color:var(--line2)}
+.seat.on{background:rgba(84,104,245,.18);border-color:#8B9BFF}
+.seat .n{font-size:12px;font-weight:600;color:var(--ink);white-space:nowrap;overflow:hidden;
+  text-overflow:ellipsis}
+.seat .r{font-size:8.5px;font-weight:600;letter-spacing:.07em;text-transform:uppercase;
+  color:var(--faint);margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.seat .c{font-size:17px;font-weight:700;font-variant-numeric:tabular-nums;line-height:1;margin-top:5px}
+
+/* Board */
+.board{display:flex;gap:6px;overflow-x:auto;padding-bottom:6px;align-items:flex-start}
+.lane{flex:1;min-width:132px;background:rgba(255,255,255,.025);border:1px solid rgba(255,255,255,.07);
+  border-radius:11px;padding:8px;display:flex;flex-direction:column}
+.lane-h{padding:6px 7px 8px;border-bottom:1px solid rgba(255,255,255,.07);margin-bottom:7px}
+.lane-n{font-size:8.5px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;line-height:1.3;
+  min-height:22px}
+.lane-c{font-size:15px;font-weight:700;color:var(--ink);font-variant-numeric:tabular-nums;
+  line-height:1;margin-top:3px}
+.drop{flex:1;min-height:54px;display:flex;flex-direction:column;gap:5px;border-radius:8px;
+  padding:2px;transition:.12s}
+.drop.over{background:rgba(84,104,245,.16);outline:2px dashed #8B9BFF;outline-offset:-2px}
+.card{background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.10);
+  border-left:3px solid var(--faint);border-radius:8px;padding:11px 10px;cursor:grab;
+  font-size:12.5px;font-weight:600;color:var(--ink);letter-spacing:-.012em;line-height:1.25;
+  user-select:none;transition:background .14s,border-color .14s;word-break:break-word}
+.card:hover{background:rgba(255,255,255,.10);border-color:rgba(139,155,255,.55)}
+.card.on{background:rgba(84,104,245,.20);border-color:#8B9BFF}
+.card.drag{opacity:.45;cursor:grabbing}
+.lane-e{text-align:center;color:#3B4258;font-size:12px;padding:9px 0}
+
+/* Detail */
+.detail{margin-top:11px;background:var(--panel);border:1px solid var(--line);border-radius:12px;
+  padding:15px 17px;display:none}
+.detail.show{display:block}
+.d-h{display:flex;align-items:center;gap:9px;flex-wrap:wrap;margin-bottom:9px}
+.d-n{font-size:15.5px;font-weight:600;letter-spacing:-.015em}
+.tag{font-size:9.5px;font-weight:600;padding:2px 8px;border-radius:5px;white-space:nowrap}
+.d-own{margin-left:auto;font-size:11px;color:var(--dim)}
+.d-own b{color:var(--ink);font-weight:600}
+.d-l{font-size:12.5px;color:#B7BEDA;line-height:1.65;margin-bottom:4px}
+.d-l span.lbl{color:var(--faint)}
+.d-p{font-size:11.5px;color:var(--dim);line-height:1.65}
+/* Editable copy. Reads as text until you touch it, then behaves like a field. */
+.ed{display:inline-block;min-width:60px;border-radius:5px;padding:1px 4px;margin:-1px -4px;
+  border-bottom:1px dashed transparent;outline:none;cursor:text;transition:.14s;
+  white-space:pre-wrap;word-break:break-word}
+.ed:hover{border-bottom-color:rgba(139,155,255,.45);background:rgba(255,255,255,.035)}
+.ed:focus{background:rgba(84,104,245,.16);border-bottom-color:#8B9BFF;
+  box-shadow:0 0 0 1px rgba(139,155,255,.35)}
+.ed:empty::before{content:attr(data-placeholder);color:#3B4258}
+.d-foot{display:flex;align-items:center;gap:9px;margin-top:10px;padding-top:9px;
+  border-top:1px solid rgba(255,255,255,.07)}
+.d-hint{font-size:10px;color:var(--faint)}
+.edited{font-size:9px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;
+  color:#FFD400;background:rgba(255,212,0,.13);border:1px solid rgba(255,212,0,.30);
+  border-radius:4px;padding:2px 6px}
+.revert{margin-left:auto;background:transparent;border:1px solid rgba(255,255,255,.14);
+  color:var(--dim);border-radius:6px;padding:4px 10px;font-family:var(--font);
+  font-size:10px;font-weight:600;cursor:pointer;transition:.15s}
+.revert:hover{color:var(--ink);border-color:#8B9BFF;background:rgba(84,104,245,.16)}
+.hint{text-align:center;font-size:11px;color:var(--faint);padding:9px 0 2px}
+</style>
+<div class="wrap"><div class="inner">
+  <div class="desk" id="desk"></div>
+  <div class="board" id="board"></div>
+  <div class="detail" id="detail"></div>
+  <div class="hint" id="hint">Drag a partner between stages. Click one to see where it stands.</div>
+</div></div>
+<script>
+var DATA = [];
+var STAGES = [];
+var MANAGERS = [];
+var KEY = "yuno_cosell_stages_v1";
+var TEXTKEY = "yuno_cosell_text_v1";
+
+var moved = {};
+try { moved = JSON.parse(localStorage.getItem(KEY) || "{}"); } catch (e) { moved = {}; }
+
+// Copy the desk has rewritten, per partner and per field. Absent = use the plan's.
+var edits = {};
+try { edits = JSON.parse(localStorage.getItem(TEXTKEY) || "{}"); } catch (e) { edits = {}; }
+
+var FIELDS = ["standing", "play_note"];
+
+function textOf(d, field) {
+  var e = edits[d.name];
+  return (e && e[field] !== undefined) ? e[field] : d[field];
+}
+function isEdited(d) {
+  var e = edits[d.name];
+  if (!e) return false;
+  return FIELDS.some(function (f) { return e[f] !== undefined && e[f] !== d[f]; });
+}
+function saveText(name, field, value) {
+  var d = DATA.find(function (x) { return x.name === name; });
+  if (!d) return;
+  value = String(value).replace(/\s+$/, "");
+  edits[name] = edits[name] || {};
+  if (value === d[field] || value === "") { delete edits[name][field]; }
+  else { edits[name][field] = value; }
+  if (!Object.keys(edits[name]).length) delete edits[name];
+  try { localStorage.setItem(TEXTKEY, JSON.stringify(edits)); } catch (e) {}
+  render();
+}
+function revert(name) {
+  delete edits[name];
+  try { localStorage.setItem(TEXTKEY, JSON.stringify(edits)); } catch (e) {}
+  render();
+}
+// Enter commits, Escape abandons the edit.
+function edKey(ev) {
+  if (ev.key === "Enter" && !ev.shiftKey) { ev.preventDefault(); ev.target.blur(); }
+  if (ev.key === "Escape") { ev.target.textContent = ev.target.dataset.original; ev.target.blur(); }
+}
+
+var filter = null, sel = null, dragging = null;
+
+function stageOf(d) {
+  return (moved[d.name] !== undefined) ? moved[d.name] : d.stage;
+}
+function save() {
+  try { localStorage.setItem(KEY, JSON.stringify(moved)); } catch (e) {}
+}
+function visible() {
+  return DATA.filter(function (d) { return !filter || d.owner === filter; });
+}
+
+function onDragStart(ev, name) {
+  dragging = name;
+  ev.dataTransfer.effectAllowed = "move";
+  try { ev.dataTransfer.setData("text/plain", name); } catch (e) {}
+  ev.currentTarget.classList.add("drag");
+}
+function onDragEnd(ev) {
+  dragging = null;
+  ev.currentTarget.classList.remove("drag");
+  document.querySelectorAll(".drop.over").forEach(function (n) { n.classList.remove("over"); });
+}
+function onDragOver(ev) { ev.preventDefault(); ev.currentTarget.classList.add("over"); }
+function onDragLeave(ev) { ev.currentTarget.classList.remove("over"); }
+function onDrop(ev, stage) {
+  ev.preventDefault();
+  ev.currentTarget.classList.remove("over");
+  var name = dragging;
+  try { name = ev.dataTransfer.getData("text/plain") || dragging; } catch (e) {}
+  if (!name) return;
+  moved[name] = stage;
+  save();
+  render();
+}
+
+function pick(name) {
+  sel = (sel === name) ? null : name;
+  render();
+}
+function setFilter(k) {
+  filter = (filter === k) ? null : k;
+  if (sel && filter) {
+    var d = DATA.find(function (x) { return x.name === sel; });
+    if (!d || d.owner !== filter) sel = null;
+  }
+  render();
+}
+
+function esc(s) { return String(s).replace(/'/g, "\\'"); }
+function attr(s) {
+  return String(s).replace(/&/g, "&amp;").replace(/"/g, "&quot;")
+                  .replace(/</g, "&lt;").replace(/>/g, "&gt;");
+}
+function field(d, name, placeholder) {
+  var v = textOf(d, name);
+  return '<span class="ed" contenteditable="true" spellcheck="false"' +
+    ' data-placeholder="' + attr(placeholder) + '"' +
+    ' data-original="' + attr(v) + '"' +
+    ' onfocus="this.dataset.original=this.textContent"' +
+    ' onkeydown="edKey(event)"' +
+    ' onblur="saveText(\'' + esc(d.name) + '\',\'' + name + '\',this.textContent)">' +
+    attr(v) + '</span>';
+}
+
+function render() {
+  var vis = visible();
+
+  // Desk
+  var counts = {};
+  DATA.forEach(function (d) { counts[d.owner] = (counts[d.owner] || 0) + 1; });
+  document.getElementById("desk").innerHTML = MANAGERS.map(function (m) {
+    var n = counts[m.key] || 0;
+    return '<div class="seat' + (filter === m.key ? " on" : "") + '"' +
+      ' style="border-left-color:' + (n ? m.accent : "transparent") + '"' +
+      ' onclick="setFilter(\'' + esc(m.key) + '\')" title="' + m.name + ' · ' + m.region + '">' +
+      '<div class="n">' + m.name + '</div><div class="r">' + m.region + '</div>' +
+      '<div class="c" style="color:' + (n ? m.accent : "#3B4258") + '">' + n + '</div></div>';
+  }).join("");
+
+  // Lanes
+  document.getElementById("board").innerHTML = STAGES.map(function (s, i) {
+    var cards = vis.filter(function (d) { return stageOf(d) === i; });
+    var inner = cards.map(function (d) {
+      return '<div class="card' + (sel === d.name ? " on" : "") + '"' +
+        ' style="border-left-color:' + s.color + '" draggable="true"' +
+        ' onclick="pick(\'' + esc(d.name) + '\')"' +
+        ' ondragstart="onDragStart(event,\'' + esc(d.name) + '\')"' +
+        ' ondragend="onDragEnd(event)">' + d.name + '</div>';
+    }).join("");
+    if (!inner) inner = '<div class="lane-e">—</div>';
+    return '<div class="lane"><div class="lane-h">' +
+      '<div class="lane-n" style="color:' + s.color + '">' + s.name + '</div>' +
+      '<div class="lane-c">' + cards.length + '</div></div>' +
+      '<div class="drop" ondragover="onDragOver(event)" ondragleave="onDragLeave(event)"' +
+      ' ondrop="onDrop(event,' + i + ')">' + inner + '</div></div>';
+  }).join("");
+
+  // Detail
+  var box = document.getElementById("detail");
+  var d = sel ? DATA.find(function (x) { return x.name === sel; }) : null;
+  if (!d) {
+    box.classList.remove("show");
+  } else {
+    var s = STAGES[stageOf(d)];
+    var fee = d.platform_fee ? "" :
+      '<span class="tag" style="background:rgba(255,212,0,.14);color:#FFD400;' +
+      'border:1px solid rgba(255,212,0,.30)">No platform fee</span>';
+    var sup = d.support ? " · support " + d.support : "";
+    var plan = (d.owner_plan && d.owner_plan !== d.manager)
+      ? ' <span style="color:#5C6480">(plan: &ldquo;' + d.owner_plan + '&rdquo;)</span>' : "";
+    box.innerHTML =
+      '<div class="d-h"><span class="d-n">' + d.name + '</span>' +
+      '<span class="tag" style="background:' + s.color + '1F;color:' + s.color +
+      ';border:1px solid ' + s.color + '3D">' + s.name + '</span>' +
+      '<span class="tag" style="background:rgba(139,155,255,.14);color:#8B9BFF;' +
+      'border:1px solid rgba(139,155,255,.30)">' + d.play + '</span>' + fee +
+      '<span class="d-own"><b>' + d.manager + '</b> · ' + d.region + sup + plan + '</span></div>' +
+      '<div class="d-l"><span class="lbl">Where it stands · </span>' +
+        field(d, "standing", "Describe where this one stands") + '</div>' +
+      '<div class="d-p">' + field(d, "play_note", "The play for this partner") + '</div>' +
+      '<div class="d-foot">' +
+        (isEdited(d) ? '<span class="edited">Edited</span>' : '') +
+        '<span class="d-hint">Click any line to rewrite it · Enter saves, Esc cancels</span>' +
+        (isEdited(d) ? '<button class="revert" onclick="revert(\'' + esc(d.name) +
+                       '\')">Restore the plan\u2019s wording</button>' : '') +
+      '</div>';
+    box.classList.add("show");
+  }
+
+  var n = vis.length;
+  document.getElementById("hint").textContent =
+    n + (n === 1 ? " partner" : " partners") + (filter ? " on " + filter + "'s desk" : "") +
+    " · drag between stages to move them";
+}
+render();
+</script>

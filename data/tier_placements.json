@@ -1,0 +1,20 @@
+{
+  "bbva": {
+    "by": "seed",
+    "name": "Bbva",
+    "tier": "Tier 1",
+    "when": "2026-09-18"
+  },
+  "mastercard": {
+    "by": "seed",
+    "name": "Mastercard",
+    "tier": "Strategic",
+    "when": "2026-09-18"
+  },
+  "visa": {
+    "by": "seed",
+    "name": "Visa",
+    "tier": "Strategic",
+    "when": "2026-09-18"
+  }
+}

@@ -1,0 +1,215 @@
+<!doctype html>
+<meta charset="utf-8">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --line:#232A3D; --ink:#EEF0FA; --dim:#8991AC; --faint:#5C6480;
+  --lime:#E0ED80; --coral:#FF6B7D; --amber:#FFD400; --blue:#8B9BFF;
+  --font:'Geist','GeistSans',-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;
+}
+html,body{font-family:var(--font);background:transparent;color:var(--ink);font-size:13px;
+  -webkit-font-smoothing:antialiased}
+.wrap{position:relative;border-radius:16px;border:1px solid var(--line);overflow:hidden;
+  background:linear-gradient(168deg,#07080E 0%,#0E1119 55%,#121623 100%);padding:16px}
+.wrap::after{content:'';position:absolute;top:-130px;right:-90px;width:430px;height:430px;
+  border-radius:50%;pointer-events:none;
+  background:radial-gradient(circle,rgba(84,104,245,.15),transparent 66%)}
+.inner{position:relative;z-index:1}
+.hdr{display:flex;align-items:baseline;gap:10px;flex-wrap:wrap;margin-bottom:12px}
+.hdr .w{font-size:15px;font-weight:600;letter-spacing:-.015em}
+.hdr .s{font-size:11px;color:var(--faint)}
+.btn{margin-left:auto;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.12);
+  color:var(--dim);border-radius:7px;padding:5px 11px;font-family:var(--font);font-size:10.5px;
+  font-weight:600;cursor:pointer;transition:.15s}
+.btn:hover{color:var(--ink);border-color:#8B9BFF;background:rgba(84,104,245,.16)}
+
+.tiles{display:flex;gap:7px;flex-wrap:wrap;margin-bottom:13px}
+.tile{flex:1;min-width:96px;background:rgba(255,255,255,.035);
+  border:1px solid rgba(255,255,255,.08);border-radius:9px;padding:10px 12px}
+.tile .v{font-size:20px;font-weight:700;font-variant-numeric:tabular-nums;line-height:1}
+.tile .k{font-size:8.5px;font-weight:600;letter-spacing:.09em;text-transform:uppercase;
+  color:var(--faint);margin-top:4px}
+
+.sec{font-size:9px;font-weight:700;letter-spacing:.11em;text-transform:uppercase;
+  color:var(--faint);margin:15px 0 8px}
+
+/* Shape of the pipeline, last week against this week */
+.graph{background:rgba(255,255,255,.028);border:1px solid rgba(255,255,255,.07);
+  border-radius:11px;padding:13px 15px}
+.grow{display:flex;align-items:center;gap:10px;margin-bottom:9px}
+.grow:last-child{margin-bottom:0}
+.gname{font-size:10px;font-weight:600;color:var(--dim);width:104px;flex-shrink:0;
+  text-align:right;letter-spacing:.02em}
+.gbars{flex:1;display:flex;flex-direction:column;gap:3px;min-width:0}
+.gbar{height:9px;border-radius:3px;min-width:2px;transition:width .3s}
+.gbar.prev{opacity:.32}
+.gnum{font-size:10.5px;color:var(--dim);font-variant-numeric:tabular-nums;width:52px;
+  flex-shrink:0}
+.gnum b{color:var(--ink);font-weight:600}
+.glegend{display:flex;gap:14px;margin-top:11px;padding-top:9px;
+  border-top:1px solid rgba(255,255,255,.07);font-size:9.5px;color:var(--faint)}
+.glegend i{display:inline-block;width:9px;height:9px;border-radius:2px;background:var(--blue);
+  margin-right:5px;vertical-align:-1px}
+
+.row{display:flex;align-items:center;gap:10px;padding:8px 10px;border-radius:8px;
+  background:rgba(255,255,255,.028);border:1px solid rgba(255,255,255,.06);margin-bottom:5px;
+  flex-wrap:wrap}
+.row .ar{width:13px;font-size:13px;flex-shrink:0}
+.row .nm{font-size:12.5px;font-weight:600;min-width:104px}
+.row .fr{font-size:10.5px;color:var(--faint)}
+.row .to{font-size:10.5px;font-weight:600}
+.row .mg{margin-left:auto;font-size:10.5px;color:var(--dim)}
+.row .st{font-size:10.5px;color:var(--faint);font-variant-numeric:tabular-nums}
+.empty{font-size:11.5px;color:var(--faint);padding:9px 2px}
+</style>
+<div class="wrap"><div class="inner">
+  <div class="hdr">
+    <span class="w" id="wk"></span><span class="s" id="sub"></span>
+    <button class="btn" onclick="reset()">Set this week as the new baseline</button>
+  </div>
+  <div class="tiles" id="tiles"></div>
+  <div class="sec">Pipeline shape · baseline against now</div>
+  <div class="graph" id="graph"></div>
+  <div class="sec" id="movedh">Moved</div>
+  <div id="movedl"></div>
+  <div class="sec" id="stillh">No movement</div>
+  <div id="stilll"></div>
+</div></div>
+<script>
+var DATA = [];
+var STAGES = [];
+var MANAGERS = [];
+var KEY = "yuno_cosell_stages_v1";
+var BASE = "yuno_cosell_baseline_v1";
+
+function read(k, d) { try { return JSON.parse(localStorage.getItem(k)) || d; } catch (e) { return d; } }
+function write(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); } catch (e) {} }
+
+var moved = read(KEY, {});
+function stageOf(d) { return (moved[d.name] !== undefined) ? moved[d.name] : d.stage; }
+
+// ISO week, so the baseline rolls on a Monday like the sprint review does.
+function isoWeek(dt) {
+  var d = new Date(Date.UTC(dt.getFullYear(), dt.getMonth(), dt.getDate()));
+  d.setUTCDate(d.getUTCDate() + 4 - (d.getUTCDay() || 7));
+  var y0 = new Date(Date.UTC(d.getUTCFullYear(), 0, 1));
+  var wk = Math.ceil((((d - y0) / 86400000) + 1) / 7);
+  return d.getUTCFullYear() + "-W" + String(wk).padStart(2, "0");
+}
+function snapshot() {
+  var s = {};
+  DATA.forEach(function (d) { s[d.name] = stageOf(d); });
+  return s;
+}
+
+var now = new Date(), week = isoWeek(now);
+var base = read(BASE, null);
+
+// First visit, or a new week has started — roll the baseline forward.
+if (!base || !base.week) {
+  base = { week: week, taken: now.toISOString(), stages: snapshot() };
+  write(BASE, base);
+} else if (base.week !== week) {
+  base = { week: week, taken: now.toISOString(), stages: base.current || base.stages,
+           prevWeek: base.week };
+  write(BASE, base);
+}
+
+function reset() {
+  base = { week: week, taken: new Date().toISOString(), stages: snapshot() };
+  write(BASE, base);
+  render();
+}
+
+function fmt(iso) {
+  var d = new Date(iso);
+  return d.toLocaleDateString(undefined, { day: "numeric", month: "short" });
+}
+function daysSince(iso) {
+  return Math.max(0, Math.round((Date.now() - new Date(iso).getTime()) / 86400000));
+}
+
+function render() {
+  var was = base.stages || {};
+  var rows = DATA.map(function (d) {
+    var from = (was[d.name] !== undefined) ? was[d.name] : d.stage;
+    var to = stageOf(d);
+    return { d: d, from: from, to: to, delta: to - from };
+  });
+
+  var up = rows.filter(function (r) { return r.delta > 0; });
+  var down = rows.filter(function (r) { return r.delta < 0; });
+  var flat = rows.filter(function (r) { return r.delta === 0; });
+  var live = rows.filter(function (r) { return r.to === STAGES.length - 1; });
+
+  document.getElementById("wk").textContent = "Week " + week;
+  document.getElementById("sub").textContent =
+    "baseline taken " + fmt(base.taken) + " · " + daysSince(base.taken) + " days ago";
+
+  document.getElementById("tiles").innerHTML = [
+    [up.length, "Advanced", "#E0ED80"],
+    [down.length, "Slipped back", "#FF6B7D"],
+    [flat.length, "No movement", "#8991AC"],
+    [live.length, "Live", "#5FD4E8"]
+  ].map(function (t) {
+    return '<div class="tile"><div class="v" style="color:' + t[2] + '">' + t[0] +
+      '</div><div class="k">' + t[1] + '</div></div>';
+  }).join("");
+
+  // Graph: two bars per stage — where the book sat at baseline, and where it sits now.
+  var maxN = 1;
+  var counts = STAGES.map(function (s, i) {
+    var a = rows.filter(function (r) { return r.from === i; }).length;
+    var b = rows.filter(function (r) { return r.to === i; }).length;
+    maxN = Math.max(maxN, a, b);
+    return [a, b];
+  });
+  document.getElementById("graph").innerHTML = STAGES.map(function (s, i) {
+    var a = counts[i][0], b = counts[i][1];
+    var d = b - a;
+    var tag = d === 0 ? "" : (d > 0 ? ' <b style="color:#E0ED80">+' + d + "</b>"
+                                    : ' <b style="color:#FF6B7D">' + d + "</b>");
+    return '<div class="grow"><div class="gname">' + s.name + '</div>' +
+      '<div class="gbars">' +
+      '<div class="gbar prev" style="width:' + (a / maxN * 100) + '%;background:' + s.color + '"></div>' +
+      '<div class="gbar" style="width:' + (b / maxN * 100) + '%;background:' + s.color + '"></div>' +
+      '</div><div class="gnum">' + a + ' → <b>' + b + '</b>' + tag + '</div></div>';
+  }).join("") +
+    '<div class="glegend"><span><i style="opacity:.32"></i>At baseline</span>' +
+    '<span><i></i>Now</span></div>';
+
+  // Moved
+  var mh = document.getElementById("movedh");
+  mh.textContent = "Moved · " + (up.length + down.length);
+  var ml = up.concat(down).sort(function (x, y) { return y.delta - x.delta; });
+  document.getElementById("movedl").innerHTML = ml.length ? ml.map(function (r) {
+    var adv = r.delta > 0;
+    return '<div class="row">' +
+      '<span class="ar" style="color:' + (adv ? "#E0ED80" : "#FF6B7D") + '">' +
+      (adv ? "↑" : "↓") + '</span>' +
+      '<span class="nm">' + r.d.name + '</span>' +
+      '<span class="fr">' + STAGES[r.from].name + '</span>' +
+      '<span class="fr">→</span>' +
+      '<span class="to" style="color:' + STAGES[r.to].color + '">' + STAGES[r.to].name + '</span>' +
+      '<span class="mg">' + r.d.manager + '</span></div>';
+  }).join("") : '<div class="empty">Nothing has moved since the baseline was taken.</div>';
+
+  // Static
+  var sh = document.getElementById("stillh");
+  sh.textContent = "No movement · " + flat.length;
+  var sl = flat.slice().sort(function (x, y) { return x.to - y.to; });
+  document.getElementById("stilll").innerHTML = sl.length ? sl.map(function (r) {
+    return '<div class="row">' +
+      '<span class="ar" style="color:#3B4258">·</span>' +
+      '<span class="nm">' + r.d.name + '</span>' +
+      '<span class="to" style="color:' + STAGES[r.to].color + '">' + STAGES[r.to].name + '</span>' +
+      '<span class="st">' + daysSince(base.taken) + 'd static</span>' +
+      '<span class="mg">' + r.d.manager + '</span></div>';
+  }).join("") : '<div class="empty">Every partner moved this week.</div>';
+
+  // Remember where things stand, so next week's roll has something to compare against.
+  base.current = snapshot();
+  write(BASE, base);
+}
+render();
+</script>
